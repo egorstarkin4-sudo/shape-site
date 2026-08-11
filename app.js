@@ -162,3 +162,33 @@ document.querySelectorAll('.faq-question').forEach(question => {
     }
   });
 });
+
+// 3. Content Copy & Image Download Protection
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+});
+
+document.addEventListener('copy', (e) => {
+  e.preventDefault();
+});
+
+document.addEventListener('cut', (e) => {
+  e.preventDefault();
+});
+
+document.addEventListener('dragstart', (e) => {
+  if (e.target.tagName === 'IMG') {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  // Disable Ctrl+C, Ctrl+A, Ctrl+U, Ctrl+S
+  if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+  }
+  // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'i' || e.key === 'j'))) {
+    e.preventDefault();
+  }
+});
