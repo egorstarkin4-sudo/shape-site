@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shape Visuals — премиальный графический клиент для Minecraft 1.21.4. ViewModel кастомизация, Chams, ESP и адаптивный HUD с защитой HWID.">
+  <title>Shape | Премиальные визуалы для Minecraft 1.21.4</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Canvas for Geometry Particles -->
+  <canvas id="canvas-bg"></canvas>
+
+  <!-- Sticky Header -->
+  <header>
+    <div class="nav-container">
+      <a href="#" class="logo">
+        <img class="logo-img" src="shape_logo.jpg" alt="Shape Logo">
+        SHAPE
+      </a>
+      <nav>
+        <ul>
+          <li><a href="#hero">Главная</a></li>
+          <li><a href="#features">Особенности</a></li>
+          <li><a href="#pricing">Цены</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="https://discord.gg/8nbq9S54Vh" target="_blank" class="btn-nav">Купить</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="section-tag">Premium Minecraft Client Modification</span>
+        <h1>Визуалы Нового Поколения <span>Shape</span></h1>
+        <p class="hero-description">
+          Улучшайте свой геймплей с помощью передовых шейдерных эффектов Chams, кастомных ViewModel, ESP-подсветки и адаптивного HUD. Создано для Fabric Loader 1.21.4 с полной оптимизацией GPU пайплайнов.
+        </p>
+        <div class="hero-buttons">
+          <a href="#pricing" class="btn btn-primary">Приобрести Shape</a>
+          <a href="#" class="btn btn-secondary">Инструкция</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-val">1.21.4</span>
+            <span class="stat-label">Minecraft Fabric</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val">60+</span>
+            <span class="stat-label">Стабильный FPS</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val">HWID</span>
+            <span class="stat-label">Надёжная Защита</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Logo Graphic Visual -->
+      <div class="hero-visual">
+        <div class="hero-logo-wrapper">
+          <img class="hero-logo-img" src="shape_logo.jpg" alt="Shape Premium Geometric Graphic">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag">Преимущества</span>
+        <h2 class="section-title">Почему выбирают <span>Shape Visuals</span></h2>
+        <p class="section-subtitle">Мы разработали уникальный рендеринг, который не влияет на производительность игры и выводит визуальную составляющую на новый уровень.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon">✦</div>
+          <h3>Шейдерные эффекты (Chams & ESP)</h3>
+          <p>
+            Подсветка игроков и объектов сквозь стены. Мягкое свечение силуэтов, кастомные градиенты и гибкая настройка отображения сущностей.
+          </p>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon">⚙</div>
+          <h3>ViewModel Кастомизатор</h3>
+          <p>
+            Настраивайте положение, масштаб и углы поворота предметов на экране в реальном времени. Включает в себя интеграцию подсветки HoverGlow для комфортного редактирования.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>GPU Mojang Pipeline</h3>
+          <p>
+            Полная интеграция с новым графическим API Mojang (RenderPipeline, GpuTexture, CommandEncoder). Никаких просадок FPS при обработке полноэкранных шейдеров.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Защита по HWID</h3>
+          <p>
+            Сервер авторизации Shape проверяет ваш уникальный HWID компьютера через API. Исключает несанкционированный доступ и кражу вашей сборки.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Pricing Section -->
+  <section id="pricing">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag">Приобретение</span>
+        <h2 class="section-title">Выберите Тарифный <span>План</span></h2>
+        <p class="section-subtitle">Получите моментальный доступ к премиум-визуалам Shape сразу после оплаты. Никаких ручных проверок.</p>
+      </div>
+
+      <div class="pricing-grid" style="max-width: 400px; margin: 2rem auto 0;">
+        <!-- Plan: 90 Days -->
+        <div class="pricing-card popular" style="transform: none;">
+          <div>
+            <div class="price-title">90 Дней</div>
+            <div class="price-desc">Полный доступ ко всем визуалам и обновлениям</div>
+            <div class="price-amount">300 <span>₽</span></div>
+            <ul class="price-features">
+              <li>Доступ ко всем визуальным функциям</li>
+              <li>Кастомные темы оформления интерфейса</li>
+              <li>Интеграция с Discord RPC</li>
+              <li>Бесплатные обновления клиента</li>
+              <li>Сброс HWID в любое время</li>
+            </ul>
+          </div>
+          <a href="https://discord.gg/8nbq9S54Vh" target="_blank" class="btn btn-primary" style="margin-top: 2rem;">Купить</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag">Вопросы и Ответы</span>
+        <h2 class="section-title">Часто Задаваемые <span>Вопросы</span></h2>
+        <p class="section-subtitle">Возникли вопросы по установке или работе? Здесь собраны популярные ответы.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Как работает автоматическая привязка HWID?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              При первой покупке вы указываете свой игровой никнейм. Наш плагин авторизации на сервере создаёт профиль. Когда вы заходите с установленным модом Shape, клиент собирает аппаратный идентификатор вашего ПК (HWID) и автоматически привязывает его к вашему нику. Сменить его можно через личный кабинет.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Каковы системные требования мода?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              Поскольку мы переписали рендеринг под нативное GPU API от Mojang (используя шейдерный конвейер Yarn), визуалы Shape не нагружают процессор и требуют любую современную видеокарту с поддержкой OpenGL 3.2+ (практически любая видеокарта за последние 12 лет).
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Совместим ли Shape с другими модами?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>
+              Да, Shape отлично работает на Fabric Loader 1.21.4 совместно с Sodium, Iris Shaders, Lithium и другими популярными модами для оптимизации.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <a href="#" class="footer-logo">SHAPE VISUALS</a>
+      <div class="footer-links">
+        <a href="#hero">Главная</a>
+        <a href="#features">Особенности</a>
+        <a href="#pricing">Тарифы</a>
+        <a href="https://discord.gg/" target="_blank">Discord Сообщество</a>
+      </div>
+      <div class="copyright">
+        &copy; 2026 Shape. Все права защищены. Minecraft является торговой маркой Mojang Synergies AB. Данный сайт не аффилирован с Mojang.
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
