@@ -163,32 +163,31 @@ document.querySelectorAll('.faq-question').forEach(question => {
   });
 });
 
-// 3. Content Copy & Image Download Protection
-document.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
+// Internal navigation uses buttons, so the browser does not display anchor URLs on hover.
+document.querySelectorAll('.scroll-link').forEach(button => {
+  const scrollToTarget = () => document.querySelector(button.dataset.target)?.scrollIntoView({ behavior: 'smooth' });
+  button.addEventListener('click', scrollToTarget);
+  button.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      scrollToTarget();
+    }
+  });
 });
 
-document.addEventListener('copy', (e) => {
-  e.preventDefault();
+document.querySelectorAll('.external-link').forEach(button => {
+  button.addEventListener('click', () => {
+    window.open(button.dataset.url, '_blank', 'noopener,noreferrer');
+  });
 });
 
-document.addEventListener('cut', (e) => {
-  e.preventDefault();
-});
-
-document.addEventListener('dragstart', (e) => {
-  if (e.target.tagName === 'IMG') {
-    e.preventDefault();
-  }
-});
-
-document.addEventListener('keydown', (e) => {
-  // Disable Ctrl+C, Ctrl+A, Ctrl+U, Ctrl+S
-  if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
-    e.preventDefault();
-  }
-  // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J
-  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'i' || e.key === 'j'))) {
-    e.preventDefault();
+// Prevent casual copying and saving of page content.
+document.addEventListener('contextmenu', (event) => event.preventDefault());
+document.addEventListener('copy', (event) => event.preventDefault());
+document.addEventListener('cut', (event) => event.preventDefault());
+document.addEventListener('dragstart', (event) => event.preventDefault());
+document.addEventListener('keydown', (event) => {
+  if (event.ctrlKey && ['a', 'c', 's', 'u'].includes(event.key.toLowerCase())) {
+    event.preventDefault();
   }
 });

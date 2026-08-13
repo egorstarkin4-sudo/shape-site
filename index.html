@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Shape Visuals — премиальный графический клиент для Minecraft 1.21.4. ViewModel кастомизация, Chams, ESP и адаптивный HUD с защитой HWID.">
   <title>Shape | Премиальные визуалы для Minecraft 1.21.4</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260813">
 </head>
 <body>
 
@@ -15,17 +15,17 @@
   <!-- Sticky Header -->
   <header>
     <div class="nav-container">
-      <a href="#" class="logo">
+      <button type="button" class="logo scroll-link" data-target="#hero" aria-label="На главную">
         <img class="logo-img" src="shape_logo.jpg" alt="Shape Logo">
         SHAPE
-      </a>
+      </button>
       <nav>
         <ul>
-          <li><a href="#hero">Главная</a></li>
-          <li><a href="#features">Особенности</a></li>
-          <li><a href="#pricing">Цены</a></li>
-          <li><a href="#faq">FAQ</a></li>
-          <li><a href="https://discord.gg/8nbq9S54Vh" target="_blank" class="btn-nav">Купить</a></li>
+          <li><button type="button" class="scroll-link" data-target="#hero">Главная</button></li>
+          <li><button type="button" class="scroll-link" data-target="#features">Особенности</button></li>
+          <li><button type="button" class="scroll-link" data-target="#pricing">Цены</button></li>
+          <li><button type="button" class="scroll-link" data-target="#faq">FAQ</button></li>
+          <li><button type="button" class="btn-nav external-link" data-url="https://discord.gg/8nbq9S54Vh">Купить</button></li>
         </ul>
       </nav>
     </div>
@@ -35,13 +35,12 @@
   <section id="hero" class="hero">
     <div class="container hero-grid">
       <div class="hero-content">
-        <span class="section-tag">Premium Minecraft Client Modification</span>
         <h1>Визуалы Нового Поколения <span>Shape</span></h1>
         <p class="hero-description">
           Улучшайте свой геймплей с помощью передовых шейдерных эффектов Chams, кастомных ViewModel, ESP-подсветки и адаптивного HUD. Создано для Fabric Loader 1.21.4 с полной оптимизацией GPU пайплайнов.
         </p>
         <div class="hero-buttons">
-          <a href="#pricing" class="btn btn-primary">Приобрести Shape</a>
+          <button type="button" class="btn btn-primary scroll-link" data-target="#pricing">Приобрести Shape</button>
         </div>
         <div class="hero-stats">
           <div class="stat-item">
@@ -49,7 +48,7 @@
             <span class="stat-label">Minecraft Fabric</span>
           </div>
           <div class="stat-item">
-            <span class="stat-val">60+</span>
+            <span class="stat-val">100+</span>
             <span class="stat-label">Стабильный FPS</span>
           </div>
           <div class="stat-item">
@@ -139,10 +138,9 @@
               <li>Кастомные темы оформления интерфейса</li>
               <li>Интеграция с Discord RPC</li>
               <li>Бесплатные обновления клиента</li>
-              <li>Сброс HWID в любое время</li>
             </ul>
           </div>
-          <a href="https://discord.gg/8nbq9S54Vh" target="_blank" class="btn btn-primary" style="margin-top: 2rem;">Купить</a>
+          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
         </div>
       </div>
     </div>
@@ -201,12 +199,12 @@
   <!-- Footer -->
   <footer>
     <div class="footer-container">
-      <a href="#" class="footer-logo">SHAPE VISUALS</a>
+      <button type="button" class="footer-logo scroll-link" data-target="#hero">SHAPE VISUALS</button>
       <div class="footer-links">
-        <a href="#hero">Главная</a>
-        <a href="#features">Особенности</a>
-        <a href="#pricing">Тарифы</a>
-        <a href="https://discord.gg/8nbq9S54Vh" target="_blank">Discord Сообщество</a>
+        <button type="button" class="scroll-link" data-target="#hero">Главная</button>
+        <button type="button" class="scroll-link" data-target="#features">Особенности</button>
+        <button type="button" class="scroll-link" data-target="#pricing">Тарифы</button>
+        <button type="button" class="external-link" data-url="https://discord.gg/8nbq9S54Vh">Discord Сообщество</button>
       </div>
       <div class="copyright">
         &copy; 2026 Shape. Все права защищены. Minecraft является торговой маркой Mojang Synergies AB. Данный сайт не аффилирован с Mojang.
@@ -214,6 +212,6 @@
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=20260813"></script>
 </body>
 </html>
