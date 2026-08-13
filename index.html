@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Shape Visuals — премиальный графический клиент для Minecraft 1.21.4. ViewModel кастомизация, Chams, ESP и адаптивный HUD с защитой HWID.">
   <title>Shape | Премиальные визуалы для Minecraft 1.21.4</title>
-  <link rel="stylesheet" href="style.css?v=20260813">
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css?v=20260813_accountmenu">
 </head>
 <body>
 
@@ -25,6 +27,8 @@
           <li><button type="button" class="scroll-link" data-target="#features">Особенности</button></li>
           <li><button type="button" class="scroll-link" data-target="#pricing">Цены</button></li>
           <li><button type="button" class="scroll-link" data-target="#faq">FAQ</button></li>
+          <li><button type="button" class="btn-auth" id="btn-open-auth">Войти</button></li>
+          <li><button type="button" class="btn-profile" id="btn-open-profile" style="display:none;"><span class="user-avatar-badge" id="nav-user-badge">✦</span> <span id="nav-user-nick">Кабинет</span></button></li>
           <li><button type="button" class="btn-nav external-link" data-url="https://discord.gg/8nbq9S54Vh">Купить</button></li>
         </ul>
       </nav>
@@ -126,18 +130,66 @@
         <p class="section-subtitle">Получите моментальный доступ к премиум-визуалам Shape сразу после оплаты. Никаких ручных проверок.</p>
       </div>
 
-      <div class="pricing-grid" style="max-width: 400px; margin: 2rem auto 0;">
-        <!-- Plan: 90 Days -->
-        <div class="pricing-card popular" style="transform: none;">
+      <div class="pricing-grid">
+        <!-- Service 1: HWID Reset -->
+        <div class="pricing-card">
           <div>
-            <div class="price-title">Навсегда</div>
-            <div class="price-desc">Полный доступ ко всем визуалам и обновлениям</div>
-            <div class="price-amount">300 <span>₽</span></div>
+            <div class="price-title">Сброс HWID</div>
+            <div class="price-desc">Отвязка от старого ПК для переноса на новое устройство</div>
+            <div class="price-amount">100 <span>₽</span></div>
+            <ul class="price-features">
+              <li>Моментальный сброс привязки</li>
+              <li>Перенос клиента на новый ПК</li>
+              <li>Сохранение срока вашей подписки</li>
+              <li>Автоматическая смена устройства</li>
+            </ul>
+          </div>
+          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+        </div>
+
+        <!-- Plan 2: 30 Days -->
+        <div class="pricing-card">
+          <div>
+            <div class="price-title">30 Дней</div>
+            <div class="price-desc">Базовый доступ к клиенту на 1 месяц</div>
+            <div class="price-amount">120 <span>₽</span></div>
             <ul class="price-features">
               <li>Доступ ко всем визуальным функциям</li>
               <li>Кастомные темы оформления интерфейса</li>
               <li>Интеграция с Discord RPC</li>
               <li>Бесплатные обновления клиента</li>
+            </ul>
+          </div>
+          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+        </div>
+
+        <!-- Plan 2: 1 Year -->
+        <div class="pricing-card">
+          <div>
+            <div class="price-title">1 Год</div>
+            <div class="price-desc">Выгодный доступ ко всем визуалам на 365 дней</div>
+            <div class="price-amount">250 <span>₽</span></div>
+            <ul class="price-features">
+              <li>Доступ ко всем визуальным функциям</li>
+              <li>Кастомные темы оформления интерфейса</li>
+              <li>Интеграция с Discord RPC</li>
+              <li>Бесплатные обновления клиента</li>
+            </ul>
+          </div>
+          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+        </div>
+
+        <!-- Plan 3: Lifetime (Full Access) -->
+        <div class="pricing-card popular">
+          <div>
+            <div class="price-title">Навсегда</div>
+            <div class="price-desc">Полный безлимитный доступ ко всем визуалам и обновлениям</div>
+            <div class="price-amount">300 <span>₽</span></div>
+            <ul class="price-features">
+              <li>Доступ ко всем визуальным функциям</li>
+              <li>Кастомные темы оформления интерфейса</li>
+              <li>Интеграция с Discord RPC</li>
+              <li>Пожизненные обновления клиента</li>
             </ul>
           </div>
           <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
@@ -163,7 +215,7 @@
           </div>
           <div class="faq-answer">
             <p>
-              При первой покупке вы указываете свой игровой никнейм. Наш плагин авторизации на сервере создаёт профиль. Когда вы заходите с установленным модом Shape, клиент собирает аппаратный идентификатор вашего ПК (HWID) и автоматически привязывает его к вашему нику. Сменить его можно через личный кабинет.
+              При регистрации вы указываете свой игровой никнейм. Когда вы заходите в игру с установленным модом Shape, клиент собирает аппаратный идентификатор вашего ПК (HWID) и автоматически привязывает его к вашему профилю в базе. Сбросить привязку в любой момент можно прямо в личном кабинете на сайте.
             </p>
           </div>
         </div>
@@ -212,6 +264,149 @@
     </div>
   </footer>
 
-  <script src="app.js?v=20260813"></script>
+  <!-- Auth Modal (Login / Register) -->
+  <div class="modal-overlay" id="auth-modal" aria-hidden="true">
+    <div class="modal-box auth-screen" role="dialog" aria-labelledby="auth-modal-title">
+      <aside class="account-aside">
+        <button type="button" class="account-brand" id="btn-close-auth"><img src="shape_logo.jpg" alt="">SHAPE</button>
+        <div class="account-aside-content"><span>SHAPE ACCOUNT</span><h2>Ваш доступ<br>к <em>Visuals</em>.</h2><p>Управляйте лицензией, ключами и привязкой устройства в одном месте.</p></div>
+        <div class="account-aside-footer">© 2026 SHAPE VISUALS</div>
+      </aside>
+      <main class="account-content">
+        <button type="button" class="modal-close" id="btn-close-auth-alt" aria-label="Закрыть">&times;</button>
+        <div class="auth-header">
+          <span class="account-kicker">ЛИЧНЫЙ КАБИНЕТ</span>
+          <h3 id="auth-modal-title">Авторизация</h3>
+          <p class="auth-subtitle">Войдите или создайте аккаунт Shape Visuals</p>
+        </div>
+
+      <div class="auth-tabs">
+        <button type="button" class="tab-btn active" id="tab-login-btn">Вход</button>
+        <button type="button" class="tab-btn" id="tab-register-btn">Регистрация</button>
+      </div>
+
+      <div id="auth-alert" class="alert-msg" style="display:none;"></div>
+
+      <!-- Login Form -->
+      <form id="form-login" class="auth-form active" novalidate>
+        <div class="form-group">
+          <label for="login-email">Никнейм или Email</label>
+          <input type="text" id="login-email" class="input-dark" placeholder="Ваш ник или email@domain.com" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Пароль</label>
+          <input type="password" id="login-password" class="input-dark" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="login-submit-btn">Войти в аккаунт</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="reg-nickname">Игровой никнейм (Minecraft)</label>
+          <input type="text" id="reg-nickname" class="input-dark" placeholder="Например, Steve_Pro" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email адрес</label>
+          <input type="email" id="reg-email" class="input-dark" placeholder="name@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Пароль</label>
+          <input type="password" id="reg-password" class="input-dark" placeholder="Минимум 6 символов" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="reg-password-confirm">Повторите пароль</label>
+          <input type="password" id="reg-password-confirm" class="input-dark" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="reg-submit-btn">Создать аккаунт</button>
+      </form>
+      </main>
+    </div>
+  </div>
+
+  <!-- User Profile / Dashboard Modal -->
+  <div class="modal-overlay" id="profile-modal" aria-hidden="true">
+    <div class="modal-box profile-box profile-screen" role="dialog" aria-labelledby="profile-modal-title">
+      <aside class="account-aside">
+        <button type="button" class="account-brand" id="btn-close-profile"><img src="shape_logo.jpg" alt="">SHAPE</button>
+        <div class="account-aside-content"><span>SHAPE ACCOUNT</span><h2>Панель<br><em>управления.</em></h2><p>Лицензия и доступ к вашему клиенту всегда под рукой.</p></div>
+        <div class="account-aside-footer">ACCOUNT CENTER / 01</div>
+      </aside>
+      <main class="account-content profile-content">
+        <button type="button" class="modal-close" id="btn-close-profile-alt" aria-label="Закрыть">&times;</button>
+        <span class="account-kicker">ЛИЧНЫЙ КАБИНЕТ</span>
+      
+      <div class="profile-header">
+        <img id="profile-mc-avatar" class="profile-avatar" src="https://minotar.net/avatar/MHF_Steve/80.png" alt="Minecraft Skin">
+        <div class="profile-meta">
+          <h3 id="profile-modal-title">Личный кабинет</h3>
+          <div class="profile-user-nick" id="profile-username">Загрузка...</div>
+          <div class="profile-user-email" id="profile-email">email@domain.com</div>
+        </div>
+      </div>
+
+      <div id="profile-alert" class="alert-msg" style="display:none;"></div>
+
+      <div class="profile-grid">
+        <!-- License Card -->
+        <div class="profile-card">
+          <div class="card-label">Статус подписки</div>
+          <div class="card-status-badge inactive" id="profile-sub-badge">Не активна</div>
+          <div class="card-detail" id="profile-sub-expiry">Требуется активация ключа</div>
+        </div>
+
+        <!-- HWID Card -->
+        <div class="profile-card">
+          <div class="card-label">Привязанный HWID</div>
+          <div class="hwid-code" id="profile-hwid-val">Не привязан</div>
+          <div class="card-detail">Привязывается автоматически при первом запуске клиента</div>
+        </div>
+      </div>
+
+      <!-- Key Activation Box -->
+      <div class="profile-key-box">
+        <div class="card-label">Активация по ключу</div>
+        <form id="form-redeem-key" class="key-redeem-form" novalidate>
+          <input type="text" id="input-license-key" class="input-dark key-input" placeholder="Введите ключ (например: SHAPE-LIFE-...)" autocomplete="off">
+          <button type="submit" class="btn btn-primary btn-redeem" id="btn-redeem-key">Применить</button>
+        </form>
+      </div>
+
+      <!-- Admin Key Generator Section -->
+      <div class="admin-generator-box" id="admin-generator-box" style="display:none;">
+        <div class="card-label">⚡ Панель создания ключей (Администратор)</div>
+        <div class="admin-gen-row">
+          <div class="custom-select-wrapper" id="custom-plan-select">
+            <button type="button" class="custom-select-trigger" id="custom-plan-trigger">
+              <span id="custom-plan-selected-label">Навсегда (Lifetime)</span>
+              <svg class="select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="custom-options-menu" id="custom-plan-options">
+              <div class="custom-option" data-value="0">🔄 Сброс HWID (HWID Reset)</div>
+              <div class="custom-option" data-value="7">7 Дней (Розыгрыши)</div>
+              <div class="custom-option" data-value="30">30 Дней</div>
+              <div class="custom-option" data-value="365">1 Год (365 Дней)</div>
+              <div class="custom-option selected" data-value="9999">Навсегда (Lifetime)</div>
+            </div>
+            <input type="hidden" id="select-key-plan" value="9999">
+          </div>
+          <button type="button" class="btn btn-admin-gen" id="btn-admin-generate-key">+ Создать ключ</button>
+        </div>
+        <div id="admin-last-created-key" class="last-key-display" style="display:none;"></div>
+      </div>
+
+      <div class="profile-actions">
+        <button type="button" class="btn btn-hwid-reset" id="btn-reset-hwid" style="display:none;">
+          <span>⟳</span> Сбросить привязку HWID
+        </button>
+        <button type="button" class="btn btn-logout" id="btn-logout">
+          Выйти из аккаунта
+        </button>
+      </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260813_auth"></script>
 </body>
 </html>
