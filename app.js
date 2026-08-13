@@ -365,8 +365,12 @@ async function fetchAndRenderProfile() {
       if (profs && profs.length > 0) {
         const prof = profs[0];
         if (!currentUser.user_metadata) currentUser.user_metadata = {};
-        currentUser.user_metadata.hwid = prof.hwid ? prof.hwid : null;
-        if (prof.subscription_active !== undefined) currentUser.user_metadata.subscription_active = prof.subscription_active;
+        currentUser.user_metadata.hwid = (prof.hwid && prof.hwid !== 'null') ? prof.hwid : null;
+        
+        const isDbActive = prof.subscription_active === true || prof.subscription_active === 'true' || 
+          (prof.subscription_until && prof.subscription_until !== 'Не активна' && prof.subscription_until !== 'Требуется активация ключа');
+        currentUser.user_metadata.subscription_active = isDbActive;
+        
         if (prof.subscription_until) currentUser.user_metadata.subscription_until = prof.subscription_until;
         if (prof.mc_nickname) currentUser.user_metadata.mc_nickname = prof.mc_nickname;
       }
@@ -384,8 +388,14 @@ function renderProfileData() {
   const nickname = currentUser.user_metadata?.mc_nickname || currentUser.email?.split('@')[0] || 'Player';
   const email = currentUser.email || 'Не указан';
   const hwid = currentUser.user_metadata?.hwid || 'Не привязан';
-  const subActive = currentUser.user_metadata?.subscription_active === true;
-  const subExpiry = currentUser.user_metadata?.subscription_until || (subActive ? 'Навсегда (Lifetime)' : 'Требуется активация ключа');
+  
+  const rawSubActive = currentUser.user_metadata?.subscription_active;
+  const rawSubUntil = currentUser.user_metadata?.subscription_until;
+  
+  const subActive = rawSubActive === true || rawSubActive === 'true' || 
+    (rawSubUntil && rawSubUntil !== 'Не активна' && rawSubUntil !== 'Требуется активация ключа');
+  
+  const subExpiry = rawSubUntil || (subActive ? 'Навсегда (Lifetime)' : 'Требуется активация ключа');
 
   // Update DOM elements
   const nickEl = document.getElementById('profile-username');
@@ -428,7 +438,7 @@ function renderProfileData() {
     btnResetHwid.style.display = isAdmin ? 'flex' : 'none';
   }
 
-  // Show client download box strictly when subscription is active
+  // Show client download box for anyone with active subscription (and admin)
   const dlBox = document.getElementById('profile-download-box');
   if (dlBox) {
     dlBox.style.display = (subActive || isAdmin) ? 'block' : 'none';
@@ -1023,4 +1033,120 @@ if (btnDownloadClient) {
     link.click();
     document.body.removeChild(link);
   });
+}
+
+/* ==========================================================================
+   6. AnyPay Checkout & Payment Controller
+   ========================================================================== */
+const checkoutModal = document.getElementById('checkout-modal');
+const btnCloseCheckout = document.getElementById('btn-close-checkout');
+const formCheckout = document.getElementById('form-checkout');
+const checkoutPlanNameEl = document.getElementById('checkout-plan-name');
+const checkoutPlanPriceEl = document.getElementById('checkout-plan-price');
+const checkoutHiddenPlan = document.getElementById('checkout-hidden-plan');
+const checkoutHiddenPrice = document.getElementById('checkout-hidden-price');
+const checkoutNickInput = document.getElementById('checkout-nickname');
+const checkoutEmailInput = document.getElementById('checkout-email');
+const checkoutAlert = document.getElementById('checkout-alert');
+
+// AnyPay Project ID
+const ANYPAY_PROJECT_ID = '18155';
+
+// Open Checkout Modal from Pricing Cards
+document.querySelectorAll('.btn-buy-plan').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const plan = btn.getAttribute('data-plan') || '30d';
+    const name = btn.getAttribute('data-name') || 'Тариф Shape';
+    const price = btn.getAttribute('data-price') || '120';
+
+    if (checkoutPlanNameEl) checkoutPlanNameEl.textContent = name;
+    if (checkoutPlanPriceEl) checkoutPlanPriceEl.textContent = `${price} ₽`;
+    if (checkoutHiddenPlan) checkoutHiddenPlan.value = plan;
+    if (checkoutHiddenPrice) checkoutHiddenPrice.value = price;
+
+    // Auto-fill from current user if logged in
+    if (currentUser) {
+      if (checkoutNickInput && !checkoutNickInput.value) {
+        checkoutNickInput.value = currentUser.user_metadata?.mc_nickname || '';
+      }
+      if (checkoutEmailInput && !checkoutEmailInput.value) {
+        checkoutEmailInput.value = currentUser.email || '';
+      }
+    }
+
+    clearAlert(checkoutAlert);
+    openModal(checkoutModal);
+  });
+});
+
+if (btnCloseCheckout) {
+  btnCloseCheckout.addEventListener('click', () => closeModal(checkoutModal));
+}
+
+// Close checkout modal on overlay click
+if (checkoutModal) {
+  checkoutModal.addEventListener('click', (e) => {
+    if (e.target === checkoutModal) closeModal(checkoutModal);
+  });
+}
+
+// Handle Payment Submission
+if (formCheckout) {
+  formCheckout.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearAlert(checkoutAlert);
+
+    const nickname = checkoutNickInput ? checkoutNickInput.value.trim() : '';
+    const email = checkoutEmailInput ? checkoutEmailInput.value.trim() : '';
+    const plan = checkoutHiddenPlan ? checkoutHiddenPlan.value : '30d';
+    const price = checkoutHiddenPrice ? checkoutHiddenPrice.value : '120';
+    const planName = checkoutPlanNameEl ? checkoutPlanNameEl.textContent : 'Shape Visuals';
+
+    if (!nickname) {
+      showAlert(checkoutAlert, 'Пожалуйста, укажите ваш никнейм в игре Minecraft.', 'error');
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      showAlert(checkoutAlert, 'Пожалуйста, введите корректный Email для получения чека и ключа.', 'error');
+      return;
+    }
+
+    const payId = 'SHP-' + Date.now();
+    const submitBtn = document.getElementById('checkout-submit-btn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Перенаправление в AnyPay...';
+    }
+
+    // Build AnyPay Checkout URL
+    const anypayUrl = new URL('https://anypay.io/merchant');
+    anypayUrl.searchParams.set('project_id', ANYPAY_PROJECT_ID);
+    anypayUrl.searchParams.set('pay_id', payId);
+    anypayUrl.searchParams.set('amount', price);
+    anypayUrl.searchParams.set('currency', 'RUB');
+    anypayUrl.searchParams.set('desc', `Shape Visuals: ${planName} (${nickname})`);
+    anypayUrl.searchParams.set('email', email);
+    anypayUrl.searchParams.set('custom[user]', nickname);
+    anypayUrl.searchParams.set('custom[plan]', plan);
+    anypayUrl.searchParams.set('success_url', 'https://shapevisuals.store/?payment=success');
+    anypayUrl.searchParams.set('fail_url', 'https://shapevisuals.store/?payment=fail');
+
+    // Redirect to AnyPay payment gateway
+    window.location.href = anypayUrl.toString();
+  });
+}
+
+// Check if returning from payment
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('payment') === 'success') {
+  setTimeout(() => {
+    alert('🎉 Оплата успешно завершена! Ваш ключ активируется автоматически. Если у вас возникнут вопросы — напишите нам в Discord!');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, 600);
+} else if (urlParams.get('payment') === 'fail') {
+  setTimeout(() => {
+    alert('❌ Оплата была отменена или не завершена. Попробуйте снова или выберите другой способ оплаты.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, 600);
 }

@@ -844,7 +844,8 @@ footer { margin-top: 2rem; padding: 3rem 0; border-top: 1px solid var(--line); }
   transform: none;
 }
 .auth-screen,
-.profile-screen { display: grid; grid-template-columns: 1fr; }
+.profile-screen,
+.checkout-screen { display: grid; grid-template-columns: 1fr; }
 .account-aside {
   display: none;
 }
@@ -852,7 +853,8 @@ footer { margin-top: 2rem; padding: 3rem 0; border-top: 1px solid var(--line); }
 .account-content { position: relative; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; width: min(100%, 540px); margin: 0 auto; padding: 7rem 1.5rem 3rem; }
 .account-content::before { content: 'SHAPE'; position: absolute; top: 2rem; left: 1.5rem; color: #fff; font: 700 1.1rem var(--display); letter-spacing: -.06em; }
 .account-content::after { display: none; }
-.profile-content { justify-content: center; }
+.profile-content,
+.checkout-content { justify-content: center; }
 .modal-close { z-index: 3; top: 1.65rem; right: 2rem; }
 .auth-header { text-align: center; margin-bottom: 2rem; }
 .auth-header h3 { margin-top: .55rem; font-size: clamp(2.1rem, 4vw, 3.1rem); }
@@ -864,6 +866,60 @@ footer { margin-top: 2rem; padding: 3rem 0; border-top: 1px solid var(--line); }
 .profile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .profile-key-box, .admin-generator-box { max-width: 620px; }
 .profile-actions { max-width: 620px; }
+
+/* Checkout Card & Methods */
+.checkout-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.35rem;
+  background: rgba(142, 107, 255, 0.08);
+  border: 1px solid rgba(196, 167, 255, 0.3);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+.checkout-plan-info {
+  display: flex;
+  flex-direction: column;
+}
+.checkout-plan-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #c9b8ff;
+  margin-bottom: .2rem;
+}
+.checkout-plan-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+.checkout-plan-price {
+  font: 800 1.5rem var(--display);
+  color: #c9b8ff;
+}
+.checkout-methods-note {
+  margin: 1.25rem 0 1.5rem;
+  font-size: .8rem;
+  color: var(--muted);
+}
+.method-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .6rem;
+}
+.method-badge {
+  padding: .35rem .65rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: .74rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
 @media (max-width: 780px) {
   .account-content { min-height: 100dvh; justify-content: center; padding: 6rem 1.25rem 2.5rem; }
   .account-content::before { left: 1.25rem; }

@@ -150,7 +150,7 @@
               <li>Автоматическая смена устройства</li>
             </ul>
           </div>
-          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+          <button type="button" class="btn btn-primary btn-buy-plan" data-plan="reset" data-name="Сброс HWID" data-price="100" style="margin-top: 2rem;">Купить</button>
         </div>
 
         <!-- Plan 2: 30 Days -->
@@ -166,7 +166,7 @@
               <li>Бесплатные обновления клиента</li>
             </ul>
           </div>
-          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+          <button type="button" class="btn btn-primary btn-buy-plan" data-plan="30d" data-name="Подписка на 30 Дней" data-price="120" style="margin-top: 2rem;">Купить</button>
         </div>
 
         <!-- Plan 2: 1 Year -->
@@ -182,7 +182,7 @@
               <li>Бесплатные обновления клиента</li>
             </ul>
           </div>
-          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+          <button type="button" class="btn btn-primary btn-buy-plan" data-plan="365d" data-name="Подписка на 1 Год" data-price="250" style="margin-top: 2rem;">Купить</button>
         </div>
 
         <!-- Plan 3: Lifetime (Full Access) -->
@@ -198,7 +198,7 @@
               <li>Пожизненные обновления клиента</li>
             </ul>
           </div>
-          <button type="button" class="btn btn-primary external-link" data-url="https://discord.gg/8nbq9S54Vh" style="margin-top: 2rem;">Купить</button>
+          <button type="button" class="btn btn-primary btn-buy-plan" data-plan="lifetime" data-name="Подписка Навсегда (Full Access)" data-price="300" style="margin-top: 2rem;">Купить</button>
         </div>
       </div>
     </div>
@@ -427,6 +427,59 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260813_auth"></script>
+  <!-- Checkout / Payment Modal -->
+  <div class="modal-overlay" id="checkout-modal" aria-hidden="true">
+    <div class="modal-box checkout-screen" role="dialog" aria-labelledby="checkout-modal-title">
+      <main class="account-content checkout-content">
+        <button type="button" class="modal-close" id="btn-close-checkout" aria-label="Закрыть">&times;</button>
+        <div class="auth-header">
+          <span class="account-kicker">ОФОРМЛЕНИЕ ЗАКАЗА</span>
+          <h3 id="checkout-modal-title">Покупка тарифа</h3>
+          <p class="auth-subtitle">Моментальная автоматическая выдача сразу после оплаты</p>
+        </div>
+
+        <div class="checkout-summary-card">
+          <div class="checkout-plan-info">
+            <span class="checkout-plan-label">Выбранный тариф</span>
+            <div id="checkout-plan-name" class="checkout-plan-title">Подписка на 30 Дней</div>
+          </div>
+          <div class="checkout-plan-price" id="checkout-plan-price">120 ₽</div>
+        </div>
+
+        <div id="checkout-alert" class="alert-msg" style="display:none;"></div>
+
+        <form id="form-checkout" class="auth-form active" novalidate>
+          <input type="hidden" id="checkout-hidden-plan" value="30d">
+          <input type="hidden" id="checkout-hidden-price" value="120">
+
+          <div class="form-group">
+            <label for="checkout-nickname">Игровой никнейм (Minecraft)</label>
+            <input type="text" id="checkout-nickname" class="input-dark" placeholder="Ваш никнейм в игре" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label for="checkout-email">Email для получения ключа и чека</label>
+            <input type="email" id="checkout-email" class="input-dark" placeholder="name@example.com" required autocomplete="email">
+          </div>
+
+          <div class="checkout-methods-note">
+            <span>💳 Доступные методы оплаты:</span>
+            <div class="method-badges">
+              <span class="method-badge">СБП (QR-код)</span>
+              <span class="method-badge">Банковские Карты</span>
+              <span class="method-badge">ЮMoney</span>
+              <span class="method-badge">Крипта</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-auth-submit" id="checkout-submit-btn">
+            Перейти к оплате
+          </button>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260814_payment"></script>
 </body>
 </html>
