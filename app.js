@@ -427,6 +427,12 @@ function renderProfileData() {
   if (btnResetHwid) {
     btnResetHwid.style.display = isAdmin ? 'flex' : 'none';
   }
+
+  // Show client download box strictly when subscription is active
+  const dlBox = document.getElementById('profile-download-box');
+  if (dlBox) {
+    dlBox.style.display = (subActive || isAdmin) ? 'block' : 'none';
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -1003,3 +1009,18 @@ async function checkInitialSession() {
 }
 
 checkInitialSession();
+
+// Direct Client Download via Supabase Cloud Storage (No browser URL preview)
+const btnDownloadClient = document.getElementById('btn-download-client');
+if (btnDownloadClient) {
+  btnDownloadClient.addEventListener('click', () => {
+    const downloadUrl = 'https://psowlftvhxaluzkahpin.supabase.co/storage/v1/object/public/downloads/shape.jar';
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'shape.jar';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+}

@@ -671,6 +671,91 @@ footer { margin-top: 2rem; padding: 3rem 0; border-top: 1px solid var(--line); }
   gap: .65rem;
   margin-top: 1.4rem;
 }
+.btn-download-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .95rem 1.6rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  color: var(--paper);
+  font-weight: 700;
+  font-size: .88rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+.btn-download-hero:hover {
+  background: rgba(196, 167, 255, 0.15);
+  border-color: #c4b5fd;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 72, 212, 0.2);
+  color: #fff;
+}
+
+.profile-download-box {
+  margin-bottom: 1.1rem;
+}
+.btn-client-download {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: .85rem 1.1rem;
+  background: linear-gradient(135deg, rgba(142, 107, 255, 0.18), rgba(0, 0, 0, 0.45));
+  border: 1px solid rgba(196, 167, 255, 0.45);
+  border-radius: 6px;
+  color: #fff;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+.btn-client-download:hover {
+  background: linear-gradient(135deg, rgba(142, 107, 255, 0.32), rgba(20, 22, 32, 0.65));
+  border-color: #c4b5fd;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(138, 103, 255, 0.25);
+  color: #fff;
+}
+.dl-icon {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 6px;
+  background: rgba(196, 167, 255, 0.15);
+  display: grid;
+  place-items: center;
+  color: #c9b8ff;
+  flex-shrink: 0;
+}
+.dl-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  flex: 1;
+}
+.dl-title {
+  font-weight: 700;
+  font-size: .92rem;
+  color: #fff;
+}
+.dl-sub {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: .1rem;
+}
+.dl-tag {
+  font-size: .65rem;
+  font-weight: 800;
+  padding: .25rem .55rem;
+  border-radius: 4px;
+  background: #c9b8ff;
+  color: #100f18;
+  letter-spacing: .08em;
+}
+
 .btn-hwid-reset {
   width: 100%;
   display: flex;
