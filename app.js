@@ -847,6 +847,45 @@ if (customPlanTrigger && customPlanSelect) {
   });
 }
 
+// Universal reliable clipboard copy function with textarea fallback
+async function copyTextToClipboard(text) {
+  let copied = false;
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } catch (e) {}
+  }
+  if (!copied) {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      textArea.setAttribute("readonly", "");
+      document.body.appendChild(textArea);
+      textArea.select();
+      textArea.setSelectionRange(0, 99999);
+      copied = document.execCommand('copy');
+      document.body.removeChild(textArea);
+    } catch (err) {}
+  }
+  return copied;
+}
+
+if (adminLastKeyDisplay) {
+  adminLastKeyDisplay.style.cursor = 'pointer';
+  adminLastKeyDisplay.title = 'Нажмите, чтобы скопировать ключ';
+  adminLastKeyDisplay.addEventListener('click', async () => {
+    const keyText = adminLastKeyDisplay.getAttribute('data-key') || adminLastKeyDisplay.textContent.replace(/[^\w-]/g, '').trim();
+    if (keyText) {
+      await copyTextToClipboard(keyText);
+      showAlert(profileAlert, `Ключ ${keyText} скопирован в буфер обмена!`, 'success');
+    }
+  });
+}
+
 if (btnAdminGenKey) {
   btnAdminGenKey.addEventListener('click', async () => {
     if (!currentUser) return;
@@ -877,21 +916,19 @@ if (btnAdminGenKey) {
           showAlert(profileAlert, `Ошибка создания ключа: ${error.message}`, 'error');
         } else {
           adminLastKeyDisplay.style.display = 'block';
-          adminLastKeyDisplay.innerHTML = `✓ Ключ создан и скопирован: <strong>${newKeyCode}</strong>`;
-          try {
-            await navigator.clipboard.writeText(newKeyCode);
-          } catch (clipErr) {}
-          showAlert(profileAlert, `Ключ ${newKeyCode} успешно создан и скопирован!`, 'success');
+          adminLastKeyDisplay.setAttribute('data-key', newKeyCode);
+          adminLastKeyDisplay.innerHTML = `✓ Ключ создан (нажмите для копирования): <strong>${newKeyCode}</strong>`;
+          await copyTextToClipboard(newKeyCode);
+          showAlert(profileAlert, `Ключ ${newKeyCode} успешно создан и скопирован в буфер обмена!`, 'success');
         }
       } catch (err) {
         showAlert(profileAlert, 'Ошибка создания ключа в базе данных.', 'error');
       }
     } else {
       adminLastKeyDisplay.style.display = 'block';
-      adminLastKeyDisplay.innerHTML = `✓ Ключ создан (демо): <strong>${newKeyCode}</strong>`;
-      try {
-        await navigator.clipboard.writeText(newKeyCode);
-      } catch (clipErr) {}
+      adminLastKeyDisplay.setAttribute('data-key', newKeyCode);
+      adminLastKeyDisplay.innerHTML = `✓ Ключ создан (нажмите для копирования): <strong>${newKeyCode}</strong>`;
+      await copyTextToClipboard(newKeyCode);
       showAlert(profileAlert, `Ключ ${newKeyCode} скопирован в буфер обмена!`, 'success');
     }
 
@@ -1061,6 +1098,14 @@ const ANYPAY_PROJECT_ID = '18155';
 document.querySelectorAll('.btn-buy-plan').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
+
+    // If not logged in — open auth modal instead
+    if (!currentUser) {
+      openModal(authModal);
+      showAlert(authAlert, 'Для покупки необходимо войти в аккаунт или зарегистрироваться.', 'error');
+      return;
+    }
+
     const plan = btn.getAttribute('data-plan') || '30d';
     const name = btn.getAttribute('data-name') || 'Тариф Shape';
     const price = btn.getAttribute('data-price') || '120';
@@ -1070,14 +1115,12 @@ document.querySelectorAll('.btn-buy-plan').forEach(btn => {
     if (checkoutHiddenPlan) checkoutHiddenPlan.value = plan;
     if (checkoutHiddenPrice) checkoutHiddenPrice.value = price;
 
-    // Auto-fill from current user if logged in
-    if (currentUser) {
-      if (checkoutNickInput && !checkoutNickInput.value) {
-        checkoutNickInput.value = currentUser.user_metadata?.mc_nickname || '';
-      }
-      if (checkoutEmailInput && !checkoutEmailInput.value) {
-        checkoutEmailInput.value = currentUser.email || '';
-      }
+    // Auto-fill from current user
+    if (checkoutNickInput && !checkoutNickInput.value) {
+      checkoutNickInput.value = currentUser.user_metadata?.mc_nickname || '';
+    }
+    if (checkoutEmailInput && !checkoutEmailInput.value) {
+      checkoutEmailInput.value = currentUser.email || '';
     }
 
     clearAlert(checkoutAlert);

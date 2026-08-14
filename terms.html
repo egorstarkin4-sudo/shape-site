@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Пользовательское соглашение Shape Visuals — условия использования, политика конфиденциальности и возврат средств.">
+  <title>Shape | Пользовательское соглашение</title>
+  <link rel="icon" type="image/jpeg" href="shape_logo.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="shape_logo.jpg">
+  <link rel="stylesheet" href="style.css?v=20260814_terms2">
+  <style>
+    /* ── Terms-specific layout (extends main style.css) ── */
+    .terms-page { padding: 7rem 1.5rem 5rem; max-width: 800px; margin: 0 auto; }
+    .terms-back {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--violet); background: transparent; border: 0;
+      font-size: .85rem; font-weight: 600; margin-bottom: 2.5rem;
+      cursor: pointer; transition: opacity .2s; font-family: var(--body);
+    }
+    .terms-back:hover { opacity: .65; }
+    .terms-page h1 {
+      font-family: var(--display); font-size: clamp(2rem, 4.5vw, 3rem);
+      font-weight: 800; letter-spacing: -.04em; color: #fff;
+      margin-bottom: .4rem; line-height: 1.15;
+    }
+    .terms-page h1 span { color: var(--violet); }
+    .terms-meta {
+      font-size: .82rem; color: var(--quiet); margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem; border-bottom: 1px solid var(--line);
+      font-family: var(--body);
+    }
+    .terms-page h2 {
+      font-family: var(--display); font-size: 1.3rem; font-weight: 700;
+      color: #fff; margin: 2.8rem 0 .8rem; letter-spacing: -.02em;
+      padding-left: .6rem; border-left: 3px solid var(--violet);
+    }
+    .terms-page h3 {
+      font-family: var(--display); font-size: 1.05rem; font-weight: 700;
+      color: rgba(255,255,255,.88); margin: 1.8rem 0 .5rem;
+    }
+    .terms-page p {
+      margin-bottom: 1rem; color: var(--muted); line-height: 1.75;
+      font-size: .92rem;
+    }
+    .terms-page ul, .terms-page ol {
+      margin: .5rem 0 1.2rem 1.5rem; color: var(--muted); font-size: .92rem;
+    }
+    .terms-page li { margin-bottom: .5rem; line-height: 1.65; }
+    .terms-page li strong { color: rgba(255,255,255,.9); }
+    .terms-link {
+      color: var(--violet); cursor: pointer; text-decoration: none;
+      transition: opacity .2s; font-weight: 600;
+    }
+    .terms-link:hover { opacity: .75; text-decoration: underline; }
+    .terms-page strong { color: rgba(255,255,255,.9); }
+    .terms-divider {
+      border: none; border-top: 1px solid var(--line); margin: 3rem 0;
+    }
+    .terms-page .terms-footer-block {
+      margin-top: 3.5rem; padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      font-size: .78rem; color: var(--quiet); text-align: center;
+      font-family: var(--body); line-height: 1.8;
+    }
+    /* Card-style section blocks */
+    .terms-card {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 12px; padding: 1.8rem 2rem; margin: 1.5rem 0;
+    }
+    .terms-card h3 { margin-top: .5rem; }
+    .terms-card p:last-child, .terms-card ul:last-child { margin-bottom: 0; }
+    .terms-warn {
+      background: rgba(255, 80, 80, .06); border: 1px solid rgba(255, 80, 80, .15);
+      border-radius: 10px; padding: 1.2rem 1.5rem; margin: 1.2rem 0;
+    }
+    .terms-warn strong { color: #ff6b6b; }
+
+    @media (max-width: 600px) {
+      .terms-page { padding: 6rem 1rem 3rem; }
+      .terms-card { padding: 1.2rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Canvas for Geometry Particles -->
+  <canvas id="canvas-bg"></canvas>
+
+  <!-- Sticky Header -->
+  <header>
+    <div class="nav-container">
+      <button type="button" class="logo" onclick="location.href='index.html'" aria-label="На главную">
+        <img class="logo-img" src="shape_logo.jpg" alt="Shape Logo">
+        SHAPE
+      </button>
+      <nav>
+        <ul>
+          <li><button type="button" class="scroll-link" onclick="location.href='index.html'">Главная</button></li>
+          <li><button type="button" class="scroll-link" onclick="location.href='index.html#features'">Особенности</button></li>
+          <li><button type="button" class="scroll-link" onclick="location.href='index.html#pricing'">Цены</button></li>
+          <li><button type="button" class="scroll-link" onclick="location.href='index.html#faq'">FAQ</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Terms Content -->
+  <div class="terms-page">
+
+    <button type="button" class="terms-back" onclick="location.href='index.html'">← Вернуться на главную</button>
+
+    <h1>Пользовательское <span>Соглашение</span></h1>
+    <p class="terms-meta">Последнее обновление: 14 августа 2026 г. &nbsp;·&nbsp; Версия 1.0</p>
+
+    <!-- 1. Общие положения -->
+    <h2>1. Общие положения</h2>
+    <p>Настоящее Пользовательское соглашение (далее — «Соглашение») регулирует отношения между администрацией проекта <strong>Shape Visuals</strong> (далее — «Администрация», «мы») и физическим лицом (далее — «Пользователь», «вы»), использующим веб-сайт <span class="terms-link" onclick="location.href='index.html'">shapevisuals.store</span>, программное обеспечение Shape для Minecraft и связанные сервисы (далее — «Сервис»).</p>
+    <p>Регистрируясь на сайте, приобретая подписку или скачивая клиент Shape, вы подтверждаете, что полностью прочитали, поняли и принимаете условия настоящего Соглашения.</p>
+
+    <!-- 2. Описание сервиса -->
+    <h2>2. Описание сервиса</h2>
+    <p>Shape Visuals — это модификация (мод) для игры Minecraft версии 1.21.4 на платформе Fabric Loader, предоставляющая визуальные улучшения геймплея: кастомные ViewModel, шейдерные эффекты Chams, ESP-подсветку, адаптивный HUD, косметические элементы и другие функции.</p>
+    <div class="terms-card">
+      <p>Сервис включает:</p>
+      <ul>
+        <li>Веб-сайт для регистрации, авторизации и управления лицензией;</li>
+        <li>Систему лицензионных ключей для активации подписки;</li>
+        <li>Скачивание клиентского файла (shape.jar);</li>
+        <li>Систему привязки аппаратного идентификатора (HWID).</li>
+      </ul>
+    </div>
+
+    <!-- 3. Регистрация и аккаунт -->
+    <h2>3. Регистрация и аккаунт</h2>
+    <p><strong>3.1.</strong> Для использования Сервиса необходимо зарегистрироваться, указав действующий адрес электронной почты и игровой никнейм Minecraft.</p>
+    <p><strong>3.2.</strong> Вы несёте полную ответственность за сохранность данных своего аккаунта (логин, пароль) и за все действия, совершённые с его использованием.</p>
+    <p><strong>3.3.</strong> Передача аккаунта третьим лицам запрещена.</p>
+    <p><strong>3.4.</strong> Администрация оставляет за собой право заблокировать или удалить аккаунт при нарушении условий настоящего Соглашения без возврата средств.</p>
+
+    <!-- 4. Подписка и оплата -->
+    <h2>4. Подписка и оплата</h2>
+    <p><strong>4.1.</strong> Доступ к функциям Shape предоставляется на платной основе по тарифным планам:</p>
+    <div class="terms-card">
+      <ul>
+        <li><strong>30 Дней</strong> — 120 ₽</li>
+        <li><strong>1 Год</strong> — 250 ₽</li>
+        <li><strong>Навсегда (Lifetime)</strong> — 300 ₽</li>
+        <li><strong>Сброс HWID</strong> — 100 ₽ (разовая услуга)</li>
+      </ul>
+    </div>
+    <p><strong>4.2.</strong> Оплата производится через платёжный агрегатор AnyPay с использованием доступных методов: СБП (QR-код), банковские карты МИР/Visa/Mastercard, ЮMoney, криптовалюта.</p>
+    <p><strong>4.3.</strong> После успешной оплаты лицензионный ключ генерируется автоматически и привязывается к аккаунту Пользователя.</p>
+    <p><strong>4.4.</strong> Цены указаны в российских рублях (₽) и могут быть изменены Администрацией в одностороннем порядке. Изменение цен не затрагивает уже оплаченные подписки.</p>
+
+    <!-- 5. Привязка HWID -->
+    <h2>5. Привязка HWID</h2>
+    <p><strong>5.1.</strong> При первом запуске клиента Shape в игре Minecraft, модификация автоматически привязывает аппаратный идентификатор вашего компьютера (HWID) к вашему профилю.</p>
+    <p><strong>5.2.</strong> Одна подписка может быть активна только на одном устройстве одновременно.</p>
+    <p><strong>5.3.</strong> Для переноса лицензии на другое устройство необходимо выполнить сброс HWID (бесплатно для администратора, платно через ключ «Сброс HWID» для обычных пользователей).</p>
+
+    <hr class="terms-divider">
+
+    <!-- 6. Политика конфиденциальности -->
+    <h2>6. Политика конфиденциальности</h2>
+
+    <h3>6.1. Какие данные мы собираем</h3>
+    <div class="terms-card">
+      <ul>
+        <li><strong>Email-адрес</strong> — для авторизации и связи;</li>
+        <li><strong>Игровой никнейм Minecraft</strong> — для привязки лицензии;</li>
+        <li><strong>Аппаратный идентификатор (HWID)</strong> — для защиты от несанкционированного распространения клиента;</li>
+        <li><strong>IP-адрес</strong> — может фиксироваться серверами автоматически для обеспечения безопасности.</li>
+      </ul>
+    </div>
+
+    <h3>6.2. Как мы используем данные</h3>
+    <ul>
+      <li>Для предоставления, поддержки и улучшения Сервиса;</li>
+      <li>Для верификации лицензии и привязки устройства;</li>
+      <li>Для отправки уведомлений о статусе подписки;</li>
+      <li>Для предотвращения мошенничества и нарушений.</li>
+    </ul>
+
+    <h3>6.3. Передача данных третьим лицам</h3>
+    <p>Мы <strong>не продаём и не передаём</strong> персональные данные Пользователей третьим лицам, за исключением случаев, предусмотренных законодательством Российской Федерации.</p>
+
+    <h3>6.4. Хранение данных</h3>
+    <p>Данные хранятся на защищённых серверах платформы Supabase (облачная база данных) с шифрованием трафика по протоколу TLS/SSL. Мы принимаем разумные меры для защиты ваших данных, но не можем гарантировать абсолютную безопасность при передаче через сеть Интернет.</p>
+
+    <h3>6.5. Удаление данных</h3>
+    <p>Вы имеете право запросить полное удаление вашего аккаунта и связанных данных, написав на адрес <span class="terms-link" onclick="location.href='mailto:gorwok.h@yandex.ru'">gorwok.h@yandex.ru</span> или обратившись в наш <span class="terms-link" onclick="window.open('https://discord.gg/8nbq9S54Vh','_blank')">Discord</span>.</p>
+
+    <hr class="terms-divider">
+
+    <!-- 7. Возврат средств -->
+    <h2>7. Возврат средств</h2>
+    <p><strong>7.1.</strong> Поскольку Сервис предоставляет цифровой контент (программное обеспечение), активируемый моментально после оплаты, возврат средств по общему правилу <strong>не осуществляется</strong>.</p>
+    <p><strong>7.2.</strong> Исключения составляют случаи:</p>
+    <ul>
+      <li>Двойное списание средств за одну и ту же покупку;</li>
+      <li>Техническая невозможность предоставить оплаченную услугу по вине Администрации;</li>
+      <li>Ошибочный платёж (при обращении в течение 24 часов с момента оплаты).</li>
+    </ul>
+    <p><strong>7.3.</strong> Для рассмотрения заявки на возврат обратитесь на почту <span class="terms-link" onclick="location.href='mailto:gorwok.h@yandex.ru'">gorwok.h@yandex.ru</span> с указанием email аккаунта, даты платежа и причины возврата. Срок рассмотрения — до 7 рабочих дней.</p>
+
+    <hr class="terms-divider">
+
+    <!-- 8. Ограничения использования -->
+    <h2>8. Ограничения использования</h2>
+    <p>Пользователю запрещается:</p>
+    <ul>
+      <li>Декомпилировать, модифицировать, реверс-инжинирить исходный код клиента Shape;</li>
+      <li>Распространять, перепродавать или публично выкладывать файлы клиента;</li>
+      <li>Передавать лицензионные ключи или данные аккаунта третьим лицам;</li>
+      <li>Использовать Сервис для нарушения правил серверов Minecraft или законодательства;</li>
+      <li>Намеренно создавать нагрузку на серверы Сервиса (DDoS, спам-запросы и т.д.);</li>
+      <li><strong>Взламывать, «крякать», обходить или пытаться обойти систему лицензирования, защиту HWID или любые другие механизмы защиты клиента Shape;</strong></li>
+      <li><strong>Создавать, распространять, продавать или использовать «кряки», патчи, генераторы ключей, эмуляторы лицензии или любое иное программное обеспечение, направленное на обход защиты Shape;</strong></li>
+      <li><strong>Использовать модифицированные, взломанные или нелегально полученные копии клиента Shape;</strong></li>
+      <li><strong>Публиковать в открытом доступе лицензионные ключи, обфусцированный или деобфусцированный исходный код клиента.</strong></li>
+    </ul>
+
+    <h3>8.1. Последствия нарушений</h3>
+    <div class="terms-warn">
+      <p>В случае обнаружения попытки взлома, использования кряка, распространения нелегальных копий или любых иных действий, нарушающих пункт 8 настоящего Соглашения, Администрация имеет право применить следующие санкции <strong>без предварительного уведомления и без возврата средств</strong>:</p>
+      <ul>
+        <li><strong>Немедленная деактивация подписки</strong> — лицензия аннулируется, доступ к клиенту прекращается;</li>
+        <li><strong>Полная блокировка аккаунта</strong> — без возможности восстановления;</li>
+        <li><strong>Блокировка HWID</strong> — запрет на регистрацию новых аккаунтов с данного устройства;</li>
+        <li><strong>Аннулирование всех лицензионных ключей</strong>, привязанных к нарушителю;</li>
+        <li><strong>Занесение в чёрный список</strong> — перманентный бан на приобретение и использование любых продуктов Shape Visuals.</li>
+      </ul>
+    </div>
+    <p>Администрация оставляет за собой право предпринимать дополнительные меры защиты своих интересов в соответствии с действующим законодательством Российской Федерации, включая обращение в правоохранительные органы.</p>
+
+    <!-- 9. Ответственность -->
+    <h2>9. Ограничение ответственности</h2>
+    <p><strong>9.1.</strong> Сервис предоставляется «как есть» (as is). Администрация не гарантирует бесперебойную работу Сервиса и совместимость со всеми конфигурациями оборудования.</p>
+    <p><strong>9.2.</strong> Администрация не несёт ответственности за блокировки аккаунтов Пользователей на игровых серверах Minecraft, связанные с использованием модификации Shape.</p>
+    <p><strong>9.3.</strong> Максимальная совокупная ответственность Администрации ограничивается суммой, уплаченной Пользователем за текущий период подписки.</p>
+
+    <!-- 10. Изменения -->
+    <h2>10. Изменение условий</h2>
+    <p>Администрация вправе изменять настоящее Соглашение в одностороннем порядке. Актуальная версия всегда доступна на странице <span class="terms-link" onclick="location.reload()">shapevisuals.store/terms.html</span>. Продолжение использования Сервиса после внесения изменений означает согласие с новой редакцией Соглашения.</p>
+
+    <!-- 11. Контакты -->
+    <h2>11. Контактная информация</h2>
+    <p>По всем вопросам, связанным с работой Сервиса, оплатой, возвратом средств или удалением данных, обращайтесь:</p>
+    <div class="terms-card">
+      <ul>
+        <li><strong>Email:</strong> <span class="terms-link" onclick="location.href='mailto:gorwok.h@yandex.ru'">gorwok.h@yandex.ru</span></li>
+        <li><strong>Discord:</strong> <span class="terms-link" onclick="window.open('https://discord.gg/8nbq9S54Vh','_blank')">discord.gg/8nbq9S54Vh</span></li>
+        <li><strong>Сайт:</strong> <span class="terms-link" onclick="location.href='index.html'">shapevisuals.store</span></li>
+      </ul>
+    </div>
+
+    <div class="terms-footer-block">
+      © 2026 Shape Visuals. Все права защищены.<br>
+      Minecraft является торговой маркой Mojang Synergies AB. Данный проект не аффилирован с Mojang.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <button type="button" class="footer-logo" onclick="location.href='index.html'">SHAPE VISUALS</button>
+      <div class="footer-links">
+        <button type="button" class="scroll-link" onclick="location.href='index.html'">Главная</button>
+        <button type="button" class="scroll-link" onclick="location.href='index.html#features'">Особенности</button>
+        <button type="button" class="scroll-link" onclick="location.href='index.html#pricing'">Тарифы</button>
+        <button type="button" class="external-link" onclick="window.open('https://discord.gg/8nbq9S54Vh','_blank')">Discord Сообщество</button>
+        <button type="button" class="scroll-link" onclick="location.href='terms.html'">Пользовательское соглашение</button>
+      </div>
+      <div class="copyright">
+        &copy; 2026 Shape. Все права защищены. Minecraft является торговой маркой Mojang Synergies AB. Данный сайт не аффилирован с Mojang.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Particle canvas script -->
+  <script src="particles.js" defer></script>
+</body>
+</html>
