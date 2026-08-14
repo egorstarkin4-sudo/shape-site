@@ -262,20 +262,18 @@ function closeModal(modal) {
   modal.setAttribute('aria-hidden', 'true');
 }
 
-// Open Auth
+// Open Auth & Profile -> Standalone page
 if (btnOpenAuth) {
-  btnOpenAuth.addEventListener('click', () => {
-    clearAlert(authAlert);
-    openModal(authModal);
+  btnOpenAuth.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'profile.html';
   });
 }
 
-// Open Profile
 if (btnOpenProfile) {
-  btnOpenProfile.addEventListener('click', () => {
-    clearAlert(profileAlert);
-    openModal(profileModal);
-    fetchAndRenderProfile();
+  btnOpenProfile.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'profile.html';
   });
 }
 
@@ -1049,15 +1047,545 @@ async function checkInitialSession() {
       console.error("Ошибка проверки сессии Supabase:", err);
     }
   } else {
-    // Check Demo LocalStorage Session
-    const savedUser = localStorage.getItem('shape_demo_user');
-    if (savedUser) {
+    // Demo mode restore
+    const savedDemoUser = localStorage.getItem('shape_demo_user');
+    if (savedDemoUser) {
       try {
-        const parsed = JSON.parse(savedUser);
-        updateHeaderAuth(parsed);
+        const user = JSON.parse(savedDemoUser);
+        updateHeaderAuth(user);
+        renderProfileData();
       } catch (e) {}
     }
   }
+}
+
+// --------------------------------------------------------------------------
+// Standalone Profile & Auth Page Controller (profile.html)
+// --------------------------------------------------------------------------
+function initStandaloneProfilePage() {
+  const authView = document.getElementById('authView');
+  const profileView = document.getElementById('profileView');
+  if (!authView && !profileView) return; // Not on profile.html
+
+  const tabLoginBtn = document.getElementById('tabLoginBtn');
+  const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+  const formLogin = document.getElementById('formLogin');
+  const formRegister = document.getElementById('formRegister');
+  const authAlert = document.getElementById('authAlert');
+  const profileAlert = document.getElementById('profileAlert');
+
+  const profileAvatar = document.getElementById('profileAvatar');
+  const profileUsername = document.getElementById('profileUsername');
+  const profileUserEmail = document.getElementById('profileUserEmail');
+  const profileSubBadge = document.getElementById('profileSubBadge');
+  const profileSubExpiry = document.getElementById('profileSubExpiry');
+  const profileHwidVal = document.getElementById('profileHwidVal');
+  const formRedeemKey = document.getElementById('formRedeemKey');
+  const inputLicenseKey = document.getElementById('inputLicenseKey');
+  const btnRedeemKey = document.getElementById('btnRedeemKey');
+
+  const adminGenBox = document.getElementById('adminGeneratorBox');
+  const btnAdminGenKey = document.getElementById('btnAdminGenKey');
+  const selectKeyPlan = document.getElementById('selectKeyPlan');
+  const adminLastKeyDisplay = document.getElementById('adminLastKeyDisplay');
+  const customPlanSelect = document.getElementById('customPlanSelect');
+  const customPlanTrigger = document.getElementById('customPlanTrigger');
+  const customPlanLabel = document.getElementById('customPlanSelectedLabel');
+  const customPlanOptions = document.querySelectorAll('#customPlanOptions .custom-option');
+
+  const dlBox = document.getElementById('profileDownloadBox');
+  const btnDownloadClient = document.getElementById('btnDownloadClient');
+  const btnResetHwid = document.getElementById('btnResetHwid');
+  const btnLogout = document.getElementById('btnLogout');
+
+  // Tab switcher
+  if (tabLoginBtn && tabRegisterBtn && formLogin && formRegister) {
+    tabLoginBtn.addEventListener('click', () => {
+      tabLoginBtn.classList.add('active');
+      tabRegisterBtn.classList.remove('active');
+      formLogin.classList.add('active');
+      formRegister.classList.remove('active');
+      clearAlert(authAlert);
+    });
+    tabRegisterBtn.addEventListener('click', () => {
+      tabRegisterBtn.classList.add('active');
+      tabLoginBtn.classList.remove('active');
+      formRegister.classList.add('active');
+      formLogin.classList.remove('active');
+      clearAlert(authAlert);
+    });
+  }
+
+  // Render profile view on profile.html
+  async function renderStandaloneProfile(user) {
+    if (!user) {
+      if (authView) authView.classList.add('active');
+      if (profileView) profileView.classList.remove('active');
+      return;
+    }
+
+    if (authView) authView.classList.remove('active');
+    if (profileView) profileView.classList.add('active');
+
+    let nickname = user.user_metadata?.mc_nickname || user.email?.split('@')[0] || 'Игрок';
+    let email = user.email || 'Не указан';
+    let hwid = user.user_metadata?.hwid || 'Не привязан';
+    let rawSubActive = user.user_metadata?.subscription_active;
+    let rawSubUntil = user.user_metadata?.subscription_until;
+
+    // Pull live HWID and subscription from profiles table
+    if (supabaseClient) {
+      try {
+        let query = supabaseClient.from('profiles').select('*');
+        if (email && nickname) {
+          query = query.or(`email.eq.${email},mc_nickname.ilike.${nickname},id.eq.${user.id}`);
+        } else {
+          query = query.eq('id', user.id);
+        }
+        const { data: profs } = await query.limit(1);
+        if (profs && profs.length > 0) {
+          const prof = profs[0];
+          if (prof.hwid && prof.hwid !== 'null' && prof.hwid !== '') {
+            hwid = prof.hwid;
+            if (!user.user_metadata) user.user_metadata = {};
+            user.user_metadata.hwid = prof.hwid;
+          }
+          if (prof.mc_nickname) nickname = prof.mc_nickname;
+          if (prof.subscription_until) rawSubUntil = prof.subscription_until;
+          if (prof.subscription_active !== undefined) rawSubActive = prof.subscription_active;
+        }
+      } catch (e) {
+        console.warn("Live profile fetch error:", e);
+      }
+    }
+
+    const subActive = rawSubActive === true || rawSubActive === 'true' || 
+      (rawSubUntil && rawSubUntil !== 'Не активна' && rawSubUntil !== 'Требуется активация ключа');
+    const subExpiry = rawSubUntil || (subActive ? 'Навсегда (Lifetime)' : 'Требуется активация ключа');
+
+    if (profileUsername) profileUsername.textContent = nickname;
+    if (profileUserEmail) profileUserEmail.textContent = email;
+    if (profileAvatar) {
+      profileAvatar.src = `https://minotar.net/avatar/${encodeURIComponent(nickname)}/80.png`;
+    }
+
+    if (profileSubBadge) {
+      if (subActive) {
+        profileSubBadge.textContent = 'Активна';
+        profileSubBadge.className = 'card-status-badge';
+      } else {
+        profileSubBadge.textContent = 'Не активна';
+        profileSubBadge.className = 'card-status-badge inactive';
+      }
+    }
+
+    if (profileSubExpiry) {
+      profileSubExpiry.textContent = subActive ? `Действует: ${subExpiry}` : 'Требуется активация ключа';
+    }
+
+    if (profileHwidVal) {
+      profileHwidVal.textContent = hwid;
+    }
+
+    const isAdmin = email === 'gorwok.h@yandex.ru' || user.user_metadata?.role === 'Admin';
+    if (adminGenBox) adminGenBox.style.display = isAdmin ? 'block' : 'none';
+    if (btnResetHwid) btnResetHwid.style.display = isAdmin ? 'inline-flex' : 'none';
+    if (dlBox) dlBox.style.display = (subActive || isAdmin) ? 'block' : 'none';
+  }
+
+  // Update standalone on auth change
+  const originalUpdateHeader = updateHeaderAuth;
+  updateHeaderAuth = function(user) {
+    originalUpdateHeader(user);
+    renderStandaloneProfile(user);
+  };
+
+  if (currentUser) {
+    renderStandaloneProfile(currentUser);
+  }
+
+  // Form Login
+  if (formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert(authAlert);
+      const emailInput = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('btnSubmitLogin');
+
+      if (!emailInput || !password) {
+        showAlert(authAlert, 'Заполните все поля для входа.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Вход...';
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: emailInput,
+            password: password
+          });
+          if (error) {
+            showAlert(authAlert, error.message.includes('Invalid login') ? 'Неверный Email или пароль.' : error.message, 'error');
+          } else {
+            showAlert(authAlert, 'Успешный вход! Загрузка профиля...', 'success');
+            updateHeaderAuth(data.user);
+            fetchAndRenderProfile();
+          }
+        } catch (err) {
+          showAlert(authAlert, 'Ошибка связи с сервером.', 'error');
+        }
+      }
+      btn.disabled = false;
+      btn.textContent = 'Войти в аккаунт';
+    });
+  }
+
+  // Form Register
+  if (formRegister) {
+    formRegister.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert(authAlert);
+      const nick = document.getElementById('regNickname').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPassword').value;
+      const btn = document.getElementById('btnSubmitRegister');
+
+      if (!nick || !email || !pass) {
+        showAlert(authAlert, 'Заполните все поля регистрации.', 'error');
+        return;
+      }
+      if (pass.length < 6) {
+        showAlert(authAlert, 'Пароль должен быть минимум 6 символов.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Создание...';
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: pass,
+            options: {
+              data: {
+                mc_nickname: nick,
+                hwid: null,
+                subscription_active: false,
+                subscription_until: 'Не активна'
+              }
+            }
+          });
+          if (error) {
+            showAlert(authAlert, error.message, 'error');
+          } else {
+            if (data.user) {
+              try {
+                await supabaseClient.from('profiles').upsert([{
+                  id: data.user.id,
+                  email: email,
+                  mc_nickname: nick,
+                  hwid: null,
+                  subscription_active: false,
+                  subscription_until: 'Не активна'
+                }]);
+              } catch (e) {}
+              showAlert(authAlert, 'Аккаунт успешно создан!', 'success');
+              updateHeaderAuth(data.user);
+              fetchAndRenderProfile();
+            }
+          }
+        } catch (err) {
+          showAlert(authAlert, 'Ошибка связи с сервером.', 'error');
+        }
+      }
+      btn.disabled = false;
+      btn.textContent = 'Зарегистрироваться';
+    });
+  }
+
+  // Form Key Redeem
+  if (formRedeemKey) {
+    formRedeemKey.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert(profileAlert);
+      const keyVal = inputLicenseKey ? inputLicenseKey.value.trim().toUpperCase() : '';
+      if (!keyVal) {
+        showAlert(profileAlert, 'Введите лицензионный ключ.', 'error');
+        return;
+      }
+
+      btnRedeemKey.disabled = true;
+      btnRedeemKey.textContent = 'Проверка...';
+
+      if (supabaseClient && currentUser) {
+        try {
+          const { data: keys, error } = await supabaseClient
+            .from('license_keys')
+            .select('*')
+            .eq('code', keyVal)
+            .limit(1);
+
+          if (error || !keys || keys.length === 0) {
+            showAlert(profileAlert, 'Ключ не найден или введен неверно!', 'error');
+          } else {
+            const keyRecord = keys[0];
+            if (keyRecord.is_used) {
+              showAlert(profileAlert, 'Этот ключ уже был активирован ранее!', 'error');
+            } else {
+              const isReset = keyRecord.duration_days === 0 || keyVal.startsWith('SHAPE-RESET-');
+              if (isReset) {
+                await supabaseClient.from('license_keys').update({ is_used: true, used_by: currentUser.user_metadata?.mc_nickname || currentUser.email }).eq('id', keyRecord.id);
+                await supabaseClient.auth.updateUser({ data: { hwid: null } });
+                try { await supabaseClient.from('profiles').update({ hwid: null }).eq('id', currentUser.id); } catch(e){}
+                currentUser.user_metadata.hwid = null;
+                renderStandaloneProfile(currentUser);
+                inputLicenseKey.value = '';
+                showAlert(profileAlert, '✓ Ключ сброса применен! HWID сброшен.', 'success');
+              } else {
+                let subText = 'Навсегда (Lifetime)';
+                if (keyRecord.duration_days < 9000) {
+                  const expireDate = new Date();
+                  expireDate.setDate(expireDate.getDate() + keyRecord.duration_days);
+                  const day = String(expireDate.getDate()).padStart(2, '0');
+                  const month = String(expireDate.getMonth() + 1).padStart(2, '0');
+                  subText = `до ${day}.${month}.${expireDate.getFullYear()}`;
+                }
+                await supabaseClient.from('license_keys').update({ is_used: true, used_by: currentUser.user_metadata?.mc_nickname || currentUser.email }).eq('id', keyRecord.id);
+                await supabaseClient.auth.updateUser({ data: { subscription_active: true, subscription_until: subText } });
+                try { await supabaseClient.from('profiles').update({ subscription_active: true, subscription_until: subText }).eq('id', currentUser.id); } catch(e){}
+                currentUser.user_metadata.subscription_active = true;
+                currentUser.user_metadata.subscription_until = subText;
+                renderStandaloneProfile(currentUser);
+                inputLicenseKey.value = '';
+                showAlert(profileAlert, `✓ Подписка активирована: ${subText}!`, 'success');
+              }
+            }
+          }
+        } catch (err) {
+          showAlert(profileAlert, 'Ошибка связи с сервером.', 'error');
+        }
+      }
+      btnRedeemKey.disabled = false;
+      btnRedeemKey.textContent = 'Применить';
+    });
+  }
+
+  // Admin Custom Dropdown
+  if (customPlanTrigger && customPlanSelect) {
+    customPlanTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      customPlanSelect.classList.toggle('open');
+    });
+    customPlanOptions.forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        customPlanOptions.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        const val = opt.getAttribute('data-value');
+        if (selectKeyPlan) selectKeyPlan.value = val;
+        if (customPlanLabel) customPlanLabel.textContent = opt.textContent.trim();
+        customPlanSelect.classList.remove('open');
+      });
+    });
+    document.addEventListener('click', () => customPlanSelect.classList.remove('open'));
+  }
+
+  // Admin Key Generator (Fixed: without created_by column)
+  if (btnAdminGenKey) {
+    btnAdminGenKey.addEventListener('click', async () => {
+      clearAlert(profileAlert);
+      const planVal = selectKeyPlan ? selectKeyPlan.value : '9999';
+      const days = parseInt(planVal, 10);
+      let prefix = 'SHAPE-LIFE';
+      if (days === 0) prefix = 'SHAPE-RESET';
+      else if (days === 7) prefix = 'SHAPE-7D';
+      else if (days === 30) prefix = 'SHAPE-30D';
+      else if (days === 365) prefix = 'SHAPE-365D';
+
+      const randomPart = Array.from({length: 3}, () => Math.random().toString(36).substring(2, 6).toUpperCase()).join('-');
+      const generatedCode = `${prefix}-${randomPart}`;
+
+      btnAdminGenKey.disabled = true;
+      btnAdminGenKey.textContent = 'Генерация...';
+
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from('license_keys').insert([{
+            code: generatedCode,
+            duration_days: days,
+            is_used: false
+          }]);
+          if (error) {
+            showAlert(profileAlert, `Ошибка генерации ключа: ${error.message}`, 'error');
+          } else {
+            if (adminLastKeyDisplay) {
+              adminLastKeyDisplay.style.display = 'block';
+              adminLastKeyDisplay.innerHTML = `
+                <div class="key-gen-result">
+                  <div class="key-gen-info">
+                    <span class="key-gen-label">Сгенерированный ключ</span>
+                    <span class="key-gen-code">${generatedCode}</span>
+                  </div>
+                  <button type="button" class="btn-copy-key" id="btnCopyGenKey">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Скопировать</span>
+                  </button>
+                </div>
+              `;
+
+              const copyBtn = document.getElementById('btnCopyGenKey');
+              if (copyBtn) {
+                copyBtn.addEventListener('click', async (e) => {
+                  e.stopPropagation();
+                  let copied = false;
+                  try {
+                    await navigator.clipboard.writeText(generatedCode);
+                    copied = true;
+                  } catch (err) {
+                    const ta = document.createElement('textarea');
+                    ta.value = generatedCode;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    copied = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  }
+                  copyBtn.classList.add('copied');
+                  copyBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Скопировано!</span>
+                  `;
+                  setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = `
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      <span>Скопировать</span>
+                    `;
+                  }, 2200);
+                });
+              }
+            }
+            showAlert(profileAlert, `✓ Ключ ${generatedCode} успешно сохранен в базе данных!`, 'success');
+          }
+        } catch (err) {
+          showAlert(profileAlert, 'Ошибка связи с базой данных.', 'error');
+        }
+      }
+      btnAdminGenKey.disabled = false;
+      btnAdminGenKey.textContent = '+ Создать ключ';
+    });
+  }
+
+  // Custom Confirm Dialog Modal Helper
+  function showCustomConfirm({ title = 'Подтвердите действие', message = 'Вы уверены?', confirmText = 'Да, сбросить', onConfirm }) {
+    const modal = document.getElementById('confirmModal');
+    if (!modal) {
+      if (confirm(message)) {
+        if (typeof onConfirm === 'function') onConfirm();
+      }
+      return;
+    }
+
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMsg');
+    const btnOk = document.getElementById('btnConfirmOk');
+    const btnCancel = document.getElementById('btnConfirmCancel');
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (btnOk) btnOk.textContent = confirmText;
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+
+    const handleCancel = () => {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      cleanup();
+    };
+
+    const handleOk = () => {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+      cleanup();
+      if (typeof onConfirm === 'function') onConfirm();
+    };
+
+    const handleOverlay = (e) => {
+      if (e.target === modal) handleCancel();
+    };
+
+    function cleanup() {
+      if (btnCancel) btnCancel.removeEventListener('click', handleCancel);
+      if (btnOk) btnOk.removeEventListener('click', handleOk);
+      modal.removeEventListener('click', handleOverlay);
+    }
+
+    if (btnCancel) btnCancel.addEventListener('click', handleCancel);
+    if (btnOk) btnOk.addEventListener('click', handleOk);
+    modal.addEventListener('click', handleOverlay);
+  }
+
+  // HWID Reset with Custom Neon Confirmation
+  if (btnResetHwid) {
+    btnResetHwid.addEventListener('click', () => {
+      showCustomConfirm({
+        title: 'Подтвердите действие',
+        message: 'Вы уверены, что хотите сбросить привязку HWID? Новый ПК будет привязан автоматически при следующем входе.',
+        confirmText: 'Да, сбросить',
+        onConfirm: async () => {
+          clearAlert(profileAlert);
+          btnResetHwid.disabled = true;
+          btnResetHwid.textContent = 'Сброс...';
+
+          if (supabaseClient && currentUser) {
+            try {
+              await supabaseClient.auth.updateUser({ data: { hwid: null } });
+              try { await supabaseClient.from('profiles').update({ hwid: null }).eq('id', currentUser.id); } catch(e){}
+              currentUser.user_metadata.hwid = null;
+              renderStandaloneProfile(currentUser);
+              showAlert(profileAlert, '✓ Привязка HWID успешно сброшена! Новый ПК привяжется автоматически при первом запуске игры.', 'success');
+            } catch (err) {
+              showAlert(profileAlert, 'Ошибка связи с сервером при сбросе HWID.', 'error');
+            }
+          }
+          btnResetHwid.disabled = false;
+          btnResetHwid.innerHTML = '<span>⟳</span> Сбросить привязку HWID';
+        }
+      });
+    });
+  }
+
+  // Logout
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      } else {
+        localStorage.removeItem('shape_demo_user');
+      }
+      updateHeaderAuth(null);
+      renderStandaloneProfile(null);
+    });
+  }
+}
+
+// Auto-run Standalone Profile Page
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStandaloneProfilePage);
+} else {
+  initStandaloneProfilePage();
 }
 
 checkInitialSession();
@@ -1094,37 +1622,14 @@ const checkoutAlert = document.getElementById('checkout-alert');
 // AnyPay Project ID
 const ANYPAY_PROJECT_ID = '18155';
 
-// Open Checkout Modal from Pricing Cards
+// Discord Purchase Link
+const DISCORD_PURCHASE_URL = 'https://discord.gg/8nbq9S54Vh';
+
+// Direct Buy Plan click -> Open Discord
 document.querySelectorAll('.btn-buy-plan').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-
-    // If not logged in — open auth modal instead
-    if (!currentUser) {
-      openModal(authModal);
-      showAlert(authAlert, 'Для покупки необходимо войти в аккаунт или зарегистрироваться.', 'error');
-      return;
-    }
-
-    const plan = btn.getAttribute('data-plan') || '30d';
-    const name = btn.getAttribute('data-name') || 'Тариф Shape';
-    const price = btn.getAttribute('data-price') || '120';
-
-    if (checkoutPlanNameEl) checkoutPlanNameEl.textContent = name;
-    if (checkoutPlanPriceEl) checkoutPlanPriceEl.textContent = `${price} ₽`;
-    if (checkoutHiddenPlan) checkoutHiddenPlan.value = plan;
-    if (checkoutHiddenPrice) checkoutHiddenPrice.value = price;
-
-    // Auto-fill from current user
-    if (checkoutNickInput && !checkoutNickInput.value) {
-      checkoutNickInput.value = currentUser.user_metadata?.mc_nickname || '';
-    }
-    if (checkoutEmailInput && !checkoutEmailInput.value) {
-      checkoutEmailInput.value = currentUser.email || '';
-    }
-
-    clearAlert(checkoutAlert);
-    openModal(checkoutModal);
+    window.open(DISCORD_PURCHASE_URL, '_blank');
   });
 });
 
@@ -1139,49 +1644,11 @@ if (checkoutModal) {
   });
 }
 
-// Handle Payment Submission
+// Handle Payment Submission -> Discord Redirect
 if (formCheckout) {
   formCheckout.addEventListener('submit', (e) => {
     e.preventDefault();
-    clearAlert(checkoutAlert);
-
-    const nickname = checkoutNickInput ? checkoutNickInput.value.trim() : '';
-    const email = checkoutEmailInput ? checkoutEmailInput.value.trim() : '';
-    const plan = checkoutHiddenPlan ? checkoutHiddenPlan.value : '30d';
-    const price = checkoutHiddenPrice ? checkoutHiddenPrice.value : '120';
-    const planName = checkoutPlanNameEl ? checkoutPlanNameEl.textContent : 'Shape Visuals';
-
-    if (!nickname) {
-      showAlert(checkoutAlert, 'Пожалуйста, укажите ваш никнейм в игре Minecraft.', 'error');
-      return;
-    }
-    if (!email || !email.includes('@')) {
-      showAlert(checkoutAlert, 'Пожалуйста, введите корректный Email для получения чека и ключа.', 'error');
-      return;
-    }
-
-    const payId = 'SHP-' + Date.now();
-    const submitBtn = document.getElementById('checkout-submit-btn');
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Перенаправление в AnyPay...';
-    }
-
-    // Build AnyPay Checkout URL
-    const anypayUrl = new URL('https://anypay.io/merchant');
-    anypayUrl.searchParams.set('project_id', ANYPAY_PROJECT_ID);
-    anypayUrl.searchParams.set('pay_id', payId);
-    anypayUrl.searchParams.set('amount', price);
-    anypayUrl.searchParams.set('currency', 'RUB');
-    anypayUrl.searchParams.set('desc', `Shape Visuals: ${planName} (${nickname})`);
-    anypayUrl.searchParams.set('email', email);
-    anypayUrl.searchParams.set('custom[user]', nickname);
-    anypayUrl.searchParams.set('custom[plan]', plan);
-    anypayUrl.searchParams.set('success_url', 'https://shapevisuals.store/?payment=success');
-    anypayUrl.searchParams.set('fail_url', 'https://shapevisuals.store/?payment=fail');
-
-    // Redirect to AnyPay payment gateway
-    window.location.href = anypayUrl.toString();
+    window.open(DISCORD_PURCHASE_URL, '_blank');
   });
 }
 
@@ -1198,3 +1665,165 @@ if (urlParams.get('payment') === 'success') {
     window.history.replaceState({}, document.title, window.location.pathname);
   }, 600);
 }
+
+/* ==========================================================================
+   7. Interactive Visual Comparison Slider ("Играй по-своему")
+   ========================================================================== */
+function initComparisonSlider() {
+  const frame = document.getElementById('comparisonFrame');
+  const layerAfter = document.getElementById('layerAfter');
+  const slider = document.getElementById('comparisonSlider');
+  const hint = document.getElementById('comparisonHint');
+  const afterImg = layerAfter ? layerAfter.querySelector('img') : null;
+
+  if (!frame || !layerAfter || !slider) return;
+
+  let isDragging = false;
+
+  function updateAfterImgWidth() {
+    if (afterImg && frame) {
+      afterImg.style.width = `${frame.offsetWidth}px`;
+    }
+  }
+
+  window.addEventListener('resize', updateAfterImgWidth);
+  updateAfterImgWidth();
+
+  function setSliderPosition(xRatio) {
+    const clamped = Math.max(0, Math.min(1, xRatio));
+    const percent = (clamped * 100).toFixed(2);
+    layerAfter.style.width = `${percent}%`;
+    slider.style.left = `${percent}%`;
+    if (hint && !frame.classList.contains('has-interacted')) {
+      frame.classList.add('has-interacted');
+    }
+  }
+
+  function handlePointer(e) {
+    const rect = frame.getBoundingClientRect();
+    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    const xRatio = (clientX - rect.left) / rect.width;
+    setSliderPosition(xRatio);
+  }
+
+  frame.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    frame.classList.add('is-dragging');
+    layerAfter.style.transition = 'none';
+    slider.style.transition = 'none';
+    handlePointer(e);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    handlePointer(e);
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      frame.classList.remove('is-dragging');
+    }
+  });
+
+  frame.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    frame.classList.add('is-dragging');
+    layerAfter.style.transition = 'none';
+    slider.style.transition = 'none';
+    handlePointer(e);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    handlePointer(e);
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    if (isDragging) {
+      isDragging = false;
+      frame.classList.remove('is-dragging');
+    }
+  });
+
+  // Smooth intro reveal animation when scrolling into view
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          updateAfterImgWidth();
+          layerAfter.style.transition = 'width 0.85s cubic-bezier(0.25, 1, 0.5, 1)';
+          slider.style.transition = 'left 0.85s cubic-bezier(0.25, 1, 0.5, 1)';
+          setSliderPosition(0.5);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    observer.observe(frame);
+  } else {
+    setSliderPosition(0.5);
+  }
+}
+
+// Auto-run Comparison Slider
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initComparisonSlider);
+} else {
+  initComparisonSlider();
+}
+
+// --------------------------------------------------------------------------
+// Smooth Page Transitions
+// --------------------------------------------------------------------------
+function smoothNavigate(url) {
+  if (!url) return;
+  if (url.startsWith('#') || url.startsWith('javascript:')) return;
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    if (!url.includes(window.location.host)) {
+      window.open(url, '_blank');
+      return;
+    }
+  }
+
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  const targetBase = url.split('#')[0].split('?')[0];
+  if (targetBase === currentPath && url.includes('#')) {
+    const hash = url.substring(url.indexOf('#'));
+    const targetEl = document.querySelector(hash);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+  }
+
+  document.body.classList.add('page-transition-exit');
+  setTimeout(() => {
+    window.location.href = url;
+  }, 400);
+}
+
+// Intercept page navigations
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('button, a');
+  if (!target) return;
+
+  const onclickAttr = target.getAttribute('onclick');
+  if (onclickAttr && (onclickAttr.includes("location.href='") || onclickAttr.includes('location.href="'))) {
+    const match = onclickAttr.match(/location\.href=['"]([^'"]+)['"]/);
+    if (match && match[1]) {
+      const url = match[1];
+      if (!url.startsWith('http') || url.includes(window.location.host)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        smoothNavigate(url);
+      }
+    }
+  }
+}, true);
+
+// Reset transition on pageshow (e.g. browser back/forward buttons)
+window.addEventListener('pageshow', () => {
+  document.body.classList.remove('page-transition-exit');
+});
