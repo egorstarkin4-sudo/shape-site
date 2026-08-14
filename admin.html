@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Админ-панель управления Shape Visuals — управление пользователями, подписками и статусом лаунчера.">
+  <title>Shape | Админ-панель</title>
+  <link rel="icon" type="image/jpeg" href="shape_logo.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="shape_logo.jpg">
+  <link rel="stylesheet" href="style.css?v=20260815_admin_dark">
+  <style>
+    .admin-page-wrap {
+      min-height: calc(100vh - 160px);
+      padding: 6.5rem 1.5rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .admin-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .admin-title-wrap h1 {
+      font: 800 2rem var(--display);
+      color: #fff;
+      letter-spacing: -.02em;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .admin-badge-role {
+      background: rgba(155, 124, 255, 0.2);
+      border: 1px solid rgba(196, 167, 255, 0.4);
+      color: var(--violet);
+      font-size: .75rem;
+      font-weight: 700;
+      padding: .25rem .75rem;
+      border-radius: 20px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .admin-stat-card {
+      background: linear-gradient(160deg, #161822 0%, #0d0e14 100%);
+      border: 1px solid rgba(196, 167, 255, 0.18);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(155, 124, 255, 0.12);
+      border: 1px solid rgba(196, 167, 255, 0.3);
+      display: grid;
+      place-items: center;
+      color: var(--violet);
+      flex-shrink: 0;
+    }
+
+    .stat-info .stat-val {
+      font: 800 1.6rem var(--display);
+      color: #fff;
+      line-height: 1.1;
+    }
+    .stat-info .stat-lbl {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: .2rem;
+    }
+
+    /* Cards */
+    .admin-main-card {
+      background: linear-gradient(160deg, #161822 0%, #0d0e14 100%);
+      border: 1px solid rgba(196, 167, 255, 0.2);
+      border-radius: 18px;
+      padding: 1.8rem 2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      margin-bottom: 2rem;
+    }
+
+    .card-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .card-top-bar h2 {
+      font: 700 1.3rem var(--display);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      max-width: 480px;
+      justify-content: flex-end;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0 1rem 0 2.4rem;
+      color: #fff;
+      font-size: .88rem;
+      font-family: var(--body);
+      transition: all .2s;
+    }
+    .search-input-wrap input:focus {
+      outline: none;
+      border-color: var(--violet);
+      box-shadow: 0 0 15px rgba(155, 124, 255, 0.25);
+    }
+    .search-input-wrap svg {
+      position: absolute;
+      left: .85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .btn-refresh-custom {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      height: 40px;
+      padding: 0 1.1rem;
+      background: rgba(155, 124, 255, 0.12);
+      border: 1px solid rgba(196, 167, 255, 0.35);
+      border-radius: 10px;
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 700;
+      font-family: var(--body);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-refresh-custom:hover {
+      background: rgba(155, 124, 255, 0.25);
+      border-color: var(--violet);
+      box-shadow: 0 0 15px rgba(155, 124, 255, 0.2);
+    }
+
+    /* Admin Table */
+    .table-responsive {
+      overflow-x: auto;
+    }
+    .admin-users-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 .6rem;
+    }
+    .admin-users-table th {
+      color: var(--muted);
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 700;
+      padding: .5rem 1rem;
+      text-align: left;
+    }
+    .admin-users-table tr.user-row {
+      background: rgba(0, 0, 0, 0.35);
+      transition: background .2s, transform .2s;
+    }
+    .admin-users-table tr.user-row:hover {
+      background: rgba(155, 124, 255, 0.08);
+    }
+    .admin-users-table td {
+      padding: .85rem 1rem;
+      vertical-align: middle;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .admin-users-table td:first-child {
+      border-left: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 10px 0 0 10px;
+    }
+    .admin-users-table td:last-child {
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 0 10px 10px 0;
+      text-align: right;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      image-rendering: pixelated;
+      background: rgba(155, 124, 255, 0.1);
+      border: 1px solid rgba(196, 167, 255, 0.3);
+    }
+    .user-meta .user-name {
+      font-weight: 700;
+      color: #fff;
+      font-size: .92rem;
+    }
+    .user-meta .user-email {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: .25rem .6rem;
+      border-radius: 6px;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+    .badge-status.active {
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #34d399;
+    }
+    .badge-status.lifetime {
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(196, 167, 255, 0.5);
+      color: #c4a7ff;
+      box-shadow: 0 0 10px rgba(155, 124, 255, 0.2);
+    }
+    .badge-status.inactive {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--muted);
+    }
+    .badge-status.banned {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #f87171;
+    }
+
+    .hwid-tag {
+      font-family: monospace;
+      font-size: .78rem;
+      color: rgba(255, 255, 255, 0.7);
+      background: rgba(0, 0, 0, 0.5);
+      padding: .2rem .5rem;
+      border-radius: 6px;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .action-btn-group {
+      display: inline-flex;
+      gap: .4rem;
+      justify-content: flex-end;
+    }
+
+    .btn-act {
+      padding: .35rem .65rem;
+      border-radius: 6px;
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .2s;
+      font-family: var(--body);
+    }
+    .btn-act-sub {
+      background: rgba(155, 124, 255, 0.18);
+      border-color: rgba(196, 167, 255, 0.4);
+      color: #fff;
+    }
+    .btn-act-sub:hover {
+      background: var(--violet);
+      color: #100f18;
+    }
+    .btn-act-revoke {
+      background: rgba(234, 179, 8, 0.15);
+      border-color: rgba(234, 179, 8, 0.4);
+      color: #facc15;
+    }
+    .btn-act-revoke:hover {
+      background: #facc15;
+      color: #000;
+    }
+    .btn-act-hwid {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #22d3ee;
+    }
+    .btn-act-hwid:hover {
+      background: #06b6d4;
+      color: #000;
+    }
+    .btn-act-ban {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .btn-act-ban:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+    .btn-act-unban {
+      background: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.4);
+      color: #34d399;
+    }
+    .btn-act-unban:hover {
+      background: #34d399;
+      color: #000;
+    }
+    .btn-act-role {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+    .btn-act-role:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Neon Themed Custom Dropdown for Sub Modal */
+    .themed-select-box {
+      position: relative;
+      width: 100%;
+      margin-bottom: 1.25rem;
+    }
+    .themed-select-trigger {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(196, 167, 255, 0.35);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      color: #fff;
+      font-size: .9rem;
+      font-family: var(--body);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .themed-select-trigger:hover, .themed-select-box.open .themed-select-trigger {
+      border-color: var(--violet);
+      box-shadow: 0 0 15px rgba(155, 124, 255, 0.25);
+    }
+    .themed-select-options {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #141520;
+      border: 1px solid rgba(196, 167, 255, 0.35);
+      border-radius: 10px;
+      overflow: hidden;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(155, 124, 255, 0.15);
+    }
+    .themed-select-box.open .themed-select-options {
+      display: block;
+    }
+    .themed-option {
+      padding: .75rem 1rem;
+      font-size: .88rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .themed-option:hover {
+      background: rgba(155, 124, 255, 0.15);
+      color: #fff;
+    }
+    .themed-option.selected {
+      background: rgba(155, 124, 255, 0.25);
+      color: var(--violet);
+      font-weight: 700;
+    }
+
+    /* Modal */
+    .admin-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      place-items: center;
+      padding: 1rem;
+    }
+    .admin-modal-overlay.active {
+      display: grid;
+    }
+    .admin-modal-box {
+      background: linear-gradient(160deg, #181a26 0%, #0e0f16 100%);
+      border: 1px solid rgba(196, 167, 255, 0.35);
+      border-radius: 18px;
+      padding: 2rem;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(155, 124, 255, 0.2);
+      animation: modalPop .25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .admin-modal-title {
+      font: 700 1.25rem var(--display);
+      color: #fff;
+      margin-bottom: .4rem;
+    }
+    .admin-modal-desc {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+    .admin-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .75rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Access Denied Card */
+    .denied-card {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .denied-card h2 {
+      font: 800 1.8rem var(--display);
+      color: #f87171;
+      margin-bottom: .8rem;
+    }
+    .denied-card p {
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Canvas Background -->
+  <canvas id="canvas-bg"></canvas>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <button type="button" class="logo" onclick="location.href='index.html'" aria-label="На главную">
+        <img class="logo-img" src="shape_logo.jpg" alt="Shape Logo">
+        SHAPE
+      </button>
+      <nav>
+        <ul>
+          <li><button type="button" class="scroll-link" onclick="location.href='index.html'">Главная</button></li>
+          <li><button type="button" class="scroll-link" onclick="location.href='profile.html'">Личный кабинет</button></li>
+          <li><button type="button" class="btn-nav" onclick="location.href='profile.html'">В профиль</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Admin Page -->
+  <div class="admin-page-wrap">
+    
+    <div id="adminAccessDenied" class="denied-card" style="display:none;">
+      <h2>🔒 Доступ ограничен</h2>
+      <p>Эта панель предназначена только для администраторов Shape Visuals.</p>
+      <button type="button" class="btn btn-primary" onclick="location.href='profile.html'">Вернуться в личный кабинет</button>
+    </div>
+
+    <div id="adminPanelContent" style="display:none;">
+      <div class="admin-header-row">
+        <div class="admin-title-wrap">
+          <h1>
+            ⚡ Админ-панель Shape
+            <span class="admin-badge-role">Master Admin</span>
+          </h1>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="location.href='profile.html'">
+          ← Вернуться в профиль
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val" id="statTotalUsers">0</div>
+            <div class="stat-lbl">Всего пользователей</div>
+          </div>
+        </div>
+
+        <div class="admin-stat-card">
+          <div class="stat-icon" style="color: #a78bfa;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val" id="statActiveSubs">0</div>
+            <div class="stat-lbl">Активных подписок</div>
+          </div>
+        </div>
+
+        <div class="admin-stat-card">
+          <div class="stat-icon" style="color: #22d3ee;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val" id="statBoundHwids">0</div>
+            <div class="stat-lbl">Привязанных HWID</div>
+          </div>
+        </div>
+
+        <div class="admin-stat-card">
+          <div class="stat-icon" style="color: #f87171;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-val" id="statBannedUsers">0</div>
+            <div class="stat-lbl">Заблокированных</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Launcher Maintenance Card -->
+      <div class="admin-main-card">
+        <div class="card-top-bar" style="margin-bottom:0;">
+          <div>
+            <h2>⚙️ Статус лаунчера</h2>
+            <p style="color:var(--muted); font-size:.85rem; margin-top:.2rem;">Управление режимом технического обслуживания лаунчера Shape.</p>
+          </div>
+          <button type="button" class="btn" id="btnToggleTechWorks" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff;">
+            Включить техработы
+          </button>
+        </div>
+      </div>
+
+      <!-- User Management Card -->
+      <div class="admin-main-card">
+        <div class="card-top-bar">
+          <h2>👥 Управление пользователями (<span id="userTableCount">0</span>)</h2>
+          <div class="search-row">
+            <div class="search-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="adminUserSearch" placeholder="Поиск по никнейму или email...">
+            </div>
+            <button type="button" class="btn-refresh-custom" id="btnRefreshUsers">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Обновить</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-users-table">
+            <thead>
+              <tr>
+                <th>Пользователь</th>
+                <th>Подписка</th>
+                <th>HWID</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th style="text-align:right;">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTbody">
+              <tr>
+                <td colspan="6" style="text-align:center; padding: 2rem; color: var(--muted);">Загрузка списка пользователей...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Custom Dark Themed Grant Subscription Modal -->
+  <div class="admin-modal-overlay" id="grantSubModal">
+    <div class="admin-modal-box">
+      <div class="admin-modal-title">💎 Выдача подписки</div>
+      <div class="admin-modal-desc">Выберите срок действия подписки для игрока <strong id="grantTargetUsername" style="color:#fff;"></strong>:</div>
+      
+      <div class="form-group">
+        <label style="color:var(--muted); font-size:.8rem; margin-bottom:.4rem; display:block;">Срок подписки:</label>
+        
+        <div class="themed-select-box" id="durationSelectBox">
+          <button type="button" class="themed-select-trigger" id="durationTrigger">
+            <span id="selectedDurationLabel">30 Дней (1 Месяц)</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="themed-select-options" id="durationOptions">
+            <div class="themed-option" data-value="7">7 Дней</div>
+            <div class="themed-option selected" data-value="30">30 Дней (1 Месяц)</div>
+            <div class="themed-option" data-value="90">90 Дней (3 Месяца)</div>
+            <div class="themed-option" data-value="180">180 Дней (6 Месяцев)</div>
+            <div class="themed-option" data-value="365">365 Дней (1 Год)</div>
+            <div class="themed-option" data-value="-1">Навсегда (Lifetime)</div>
+          </div>
+          <input type="hidden" id="grantDurationVal" value="30">
+        </div>
+      </div>
+
+      <div class="admin-modal-actions">
+        <button type="button" class="btn btn-secondary" id="btnCancelGrantSub">Отмена</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmGrantSub">Выдать подписку</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Confirm Modal -->
+  <div class="admin-modal-overlay" id="adminConfirmModal">
+    <div class="admin-modal-box">
+      <div class="admin-modal-title" id="adminConfirmTitle">Подтвердите действие</div>
+      <div class="admin-modal-desc" id="adminConfirmMsg">Вы уверены?</div>
+      <div class="admin-modal-actions">
+        <button type="button" class="btn btn-secondary" id="btnAdminConfirmCancel">Отмена</button>
+        <button type="button" class="btn btn-primary" id="btnAdminConfirmOk">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Toast Alert Modal -->
+  <div class="admin-modal-overlay" id="adminToastModal">
+    <div class="admin-modal-box">
+      <div class="admin-modal-title" id="adminToastTitle">Уведомление</div>
+      <div class="admin-modal-desc" id="adminToastMsg">Действие выполнено</div>
+      <div class="admin-modal-actions">
+        <button type="button" class="btn btn-primary" id="btnAdminToastClose">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <button type="button" class="footer-logo scroll-link" onclick="location.href='index.html'">SHAPE VISUALS</button>
+      <div class="copyright">&copy; 2026 Shape. Панель управления администратора.</div>
+    </div>
+  </footer>
+
+  <script src="app.js?v=20260815_admin_panel"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const SUPABASE_URL = "https://psowlftvhxaluzkahpin.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_O_7uorZhbROJ4WbSIrIFHA_PpxD0kRo";
+      let sb = null;
+      if (typeof window.supabase !== "undefined") {
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+
+      let allUsers = [];
+      let adminRoleMap = new Set();
+      let techWorksEnabled = false;
+
+      const accessDenied = document.getElementById('adminAccessDenied');
+      const panelContent = document.getElementById('adminPanelContent');
+
+      // Check current auth user
+      if (!sb) {
+        if (accessDenied) accessDenied.style.display = 'block';
+        return;
+      }
+
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session || !session.user) {
+        if (accessDenied) accessDenied.style.display = 'block';
+        return;
+      }
+
+      const user = session.user;
+      const isMasterAdmin = (user.email === 'gorwok.h@yandex.ru');
+
+      // Check if user has admin key
+      const { data: adminKey } = await sb.from('license_keys').select('id').eq('code', 'ADMIN_' + user.id).limit(1);
+      const isKeyAdmin = adminKey && adminKey.length > 0;
+
+      if (!isMasterAdmin && !isKeyAdmin) {
+        if (accessDenied) accessDenied.style.display = 'block';
+        return;
+      }
+
+      // Admin verified!
+      if (accessDenied) accessDenied.style.display = 'none';
+      if (panelContent) panelContent.style.display = 'block';
+
+      // Load Users & Admins
+      async function loadAdminData() {
+        try {
+          // 1. Load admin keys
+          const { data: adminKeys } = await sb.from('license_keys').select('code').like('code', 'ADMIN_%');
+          adminRoleMap.clear();
+          if (adminKeys) {
+            adminKeys.forEach(k => {
+              const uId = k.code.replace('ADMIN_', '');
+              adminRoleMap.add(uId);
+            });
+          }
+
+          // 2. Load profiles
+          const { data: users, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+          if (error) {
+            showToast("Ошибка загрузки", error.message);
+            return;
+          }
+          allUsers = users || [];
+          renderUsersTable(allUsers);
+          updateStats(allUsers);
+        } catch (e) {
+          console.error("Failed to load users:", e);
+        }
+      }
+
+      function updateStats(users) {
+        const total = users.length;
+        let activeSubs = 0;
+        let boundHwids = 0;
+        let banned = 0;
+
+        users.forEach(u => {
+          const isBan = u.subscription_until === 'BANNED' || u.hwid === 'BANNED';
+          if (isBan) {
+            banned++;
+          } else {
+            if (u.subscription_active || (u.subscription_until && u.subscription_until !== 'Не активна' && u.subscription_until !== 'Требуется активация ключа')) {
+              activeSubs++;
+            }
+            if (u.hwid && u.hwid !== 'null' && u.hwid !== '') {
+              boundHwids++;
+            }
+          }
+        });
+
+        document.getElementById('statTotalUsers').textContent = total;
+        document.getElementById('statActiveSubs').textContent = activeSubs;
+        document.getElementById('statBoundHwids').textContent = boundHwids;
+        document.getElementById('statBannedUsers').textContent = banned;
+        document.getElementById('userTableCount').textContent = total;
+      }
+
+      function renderUsersTable(users) {
+        const tbody = document.getElementById('adminUsersTbody');
+        if (!tbody) return;
+
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--muted);">Пользователи не найдены</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => {
+          const nick = u.mc_nickname || u.email?.split('@')[0] || 'Игрок';
+          const email = u.email || 'Не указан';
+          const isBanned = u.subscription_until === 'BANNED' || u.hwid === 'BANNED';
+          const isAdminUser = email === 'gorwok.h@yandex.ru' || adminRoleMap.has(u.id);
+          
+          let subActive = u.subscription_active === true && !isBanned;
+          let subText = u.subscription_until || 'Не активна';
+          let isLifetime = subText.includes('Lifetime') || subText.includes('Навсегда') || subText === '-1';
+
+          let subBadgeClass = 'inactive';
+          if (isBanned) subBadgeClass = 'banned';
+          else if (isLifetime) subBadgeClass = 'lifetime';
+          else if (subActive) subBadgeClass = 'active';
+
+          const hwidVal = (!isBanned && u.hwid && u.hwid !== 'null' && u.hwid !== '') ? u.hwid : null;
+
+          return `
+            <tr class="user-row" data-id="${u.id}">
+              <td>
+                <div class="user-cell">
+                  <img class="user-avatar" src="https://minotar.net/avatar/${encodeURIComponent(nick)}/40.png" alt="${nick}">
+                  <div class="user-meta">
+                    <div class="user-name">${escapeHtml(nick)}</div>
+                    <div class="user-email">${escapeHtml(email)}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge-status ${subBadgeClass}">
+                  ${isBanned ? 'Заблокирован' : (isLifetime ? 'Lifetime' : (subActive ? escapeHtml(subText) : 'Не активна'))}
+                </span>
+              </td>
+              <td>
+                ${hwidVal ? `<span class="hwid-tag" title="${escapeHtml(hwidVal)}">${escapeHtml(hwidVal)}</span>` : '<span style="color:var(--muted); font-size:.8rem;">Не привязан</span>'}
+              </td>
+              <td>
+                <span class="badge-status ${isAdminUser ? 'lifetime' : 'inactive'}">
+                  ${isAdminUser ? 'Admin' : 'User'}
+                </span>
+              </td>
+              <td>
+                <span class="badge-status ${isBanned ? 'banned' : 'active'}">
+                  ${isBanned ? 'Banned' : 'Активен'}
+                </span>
+              </td>
+              <td>
+                <div class="action-btn-group">
+                  <button type="button" class="btn-act btn-act-sub" onclick="openGrantSub('${u.id}', '${encodeURIComponent(nick)}')">+ Подписка</button>
+                  ${(subActive || isLifetime) && !isBanned ? `<button type="button" class="btn-act btn-act-revoke" onclick="revokeSub('${u.id}', '${encodeURIComponent(nick)}')">Отозвать</button>` : ''}
+                  ${hwidVal ? `<button type="button" class="btn-act btn-act-hwid" onclick="resetHwid('${u.id}', '${encodeURIComponent(nick)}')">Сброс HWID</button>` : ''}
+                  <button type="button" class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${u.id}', '${encodeURIComponent(nick)}', ${isBanned})">
+                    ${isBanned ? 'Разбан' : 'Бан'}
+                  </button>
+                  <button type="button" class="btn-act btn-act-role" onclick="toggleRole('${u.id}', '${encodeURIComponent(nick)}', '${encodeURIComponent(email)}', ${isAdminUser})">
+                    ${isAdminUser ? 'Снять админа' : 'Сделать админом'}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      }
+
+      // Search Filter
+      const searchInput = document.getElementById('adminUserSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          if (!q) {
+            renderUsersTable(allUsers);
+            return;
+          }
+          const filtered = allUsers.filter(u => 
+            (u.mc_nickname && u.mc_nickname.toLowerCase().includes(q)) ||
+            (u.email && u.email.toLowerCase().includes(q)) ||
+            (u.hwid && u.hwid.toLowerCase().includes(q))
+          );
+          renderUsersTable(filtered);
+        });
+      }
+
+      // Refresh Button
+      document.getElementById('btnRefreshUsers').addEventListener('click', loadAdminData);
+
+      // Check initial Tech Works state from database
+      async function checkTechWorksState() {
+        const { data: maintKey } = await sb.from('license_keys').select('id').eq('code', 'MAINTENANCE_MODE').limit(1);
+        techWorksEnabled = (maintKey && maintKey.length > 0);
+        updateTechWorksUI();
+      }
+
+      function updateTechWorksUI() {
+        const btnTech = document.getElementById('btnToggleTechWorks');
+        if (!btnTech) return;
+        if (techWorksEnabled) {
+          btnTech.textContent = 'Отключить техработы';
+          btnTech.style.background = 'rgba(239, 68, 68, 0.2)';
+          btnTech.style.borderColor = '#f87171';
+          btnTech.style.color = '#f87171';
+        } else {
+          btnTech.textContent = 'Включить техработы';
+          btnTech.style.background = 'rgba(255,255,255,0.08)';
+          btnTech.style.borderColor = 'rgba(255,255,255,0.15)';
+          btnTech.style.color = '#fff';
+        }
+      }
+
+      // Tech Works Toggle
+      const btnTech = document.getElementById('btnToggleTechWorks');
+      if (btnTech) {
+        btnTech.addEventListener('click', async () => {
+          btnTech.disabled = true;
+          if (!techWorksEnabled) {
+            const { error } = await sb.from('license_keys').insert([{
+              code: 'MAINTENANCE_MODE',
+              duration_days: 1,
+              is_used: true,
+              used_by: 'ADMIN'
+            }]);
+            if (error) showToast("Ошибка", error.message);
+            else {
+              techWorksEnabled = true;
+              updateTechWorksUI();
+              showToast("Лаунчер", "Режим технических работ ВКЛЮЧЕН! Вход для обычных пользователей закрыт.");
+            }
+          } else {
+            const { error } = await sb.from('license_keys').delete().eq('code', 'MAINTENANCE_MODE');
+            if (error) showToast("Ошибка", error.message);
+            else {
+              techWorksEnabled = false;
+              updateTechWorksUI();
+              showToast("Лаунчер", "Режим технических работ ВЫКЛЮЧЕН. Вход открыт для всех.");
+            }
+          }
+          btnTech.disabled = false;
+        });
+      }
+
+      // Custom Themed Dropdown
+      const selectBox = document.getElementById('durationSelectBox');
+      const trigger = document.getElementById('durationTrigger');
+      const options = document.querySelectorAll('#durationOptions .themed-option');
+      const hiddenVal = document.getElementById('grantDurationVal');
+      const label = document.getElementById('selectedDurationLabel');
+
+      if (trigger && selectBox) {
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectBox.classList.toggle('open');
+        });
+        options.forEach(opt => {
+          opt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            hiddenVal.value = opt.getAttribute('data-value');
+            label.textContent = opt.textContent;
+            selectBox.classList.remove('open');
+          });
+        });
+        document.addEventListener('click', () => selectBox.classList.remove('open'));
+      }
+
+      // Modals & Action handlers
+      let grantUserId = null;
+      window.openGrantSub = (id, encNick) => {
+        grantUserId = id;
+        document.getElementById('grantTargetUsername').textContent = decodeURIComponent(encNick);
+        document.getElementById('grantSubModal').classList.add('active');
+      };
+
+      document.getElementById('btnCancelGrantSub').addEventListener('click', () => {
+        document.getElementById('grantSubModal').classList.remove('active');
+      });
+
+      document.getElementById('btnConfirmGrantSub').addEventListener('click', async () => {
+        const days = parseInt(document.getElementById('grantDurationVal').value);
+        if (!grantUserId) return;
+
+        let subText = 'Навсегда (Lifetime)';
+        if (days > 0 && days < 9000) {
+          const exp = new Date();
+          exp.setDate(exp.getDate() + days);
+          const dd = String(exp.getDate()).padStart(2, '0');
+          const mm = String(exp.getMonth() + 1).padStart(2, '0');
+          subText = `до ${dd}.${mm}.${exp.getFullYear()}`;
+        }
+
+        const { error } = await sb.from('profiles').update({
+          subscription_active: true,
+          subscription_until: subText
+        }).eq('id', grantUserId);
+
+        document.getElementById('grantSubModal').classList.remove('active');
+        if (error) showToast("Ошибка", error.message);
+        else {
+          showToast("Успех", `Подписка успешно выдана: ${subText}!`);
+          loadAdminData();
+        }
+      });
+
+      window.revokeSub = (id, encNick) => {
+        showAdminConfirm({
+          title: 'Отозвать подписку',
+          message: `Вы уверены, что хотите отозвать подписку у игрока ${decodeURIComponent(encNick)}?`,
+          onConfirm: async () => {
+            const { error } = await sb.from('profiles').update({
+              subscription_active: false,
+              subscription_until: 'Не активна'
+            }).eq('id', id);
+            if (error) showToast("Ошибка", error.message);
+            else {
+              showToast("Успех", `Подписка отозвана у ${decodeURIComponent(encNick)}.`);
+              loadAdminData();
+            }
+          }
+        });
+      };
+
+      window.resetHwid = (id, encNick) => {
+        showAdminConfirm({
+          title: 'Сброс HWID',
+          message: `Сбросить привязанный компьютер у игрока ${decodeURIComponent(encNick)}? Новый ПК привяжется автоматически при следующем входе.`,
+          onConfirm: async () => {
+            const { error } = await sb.from('profiles').update({ hwid: null }).eq('id', id);
+            if (error) showToast("Ошибка", error.message);
+            else {
+              showToast("Успех", `HWID игрока ${decodeURIComponent(encNick)} успешно сброшен.`);
+              loadAdminData();
+            }
+          }
+        });
+      };
+
+      window.toggleBan = (id, encNick, isCurrentlyBanned) => {
+        const action = isCurrentlyBanned ? 'разблокировать' : 'заблокировать';
+        showAdminConfirm({
+          title: isCurrentlyBanned ? 'Разблокировка пользователя' : 'Блокировка пользователя',
+          message: `Вы действительно хотите ${action} игрока ${decodeURIComponent(encNick)}?`,
+          onConfirm: async () => {
+            let updatePayload = isCurrentlyBanned 
+              ? { subscription_active: false, subscription_until: 'Не активна', hwid: null }
+              : { subscription_active: false, subscription_until: 'BANNED', hwid: 'BANNED' };
+            
+            const { error } = await sb.from('profiles').update(updatePayload).eq('id', id);
+            if (error) showToast("Ошибка", error.message);
+            else {
+              showToast("Успех", `Игрок ${decodeURIComponent(encNick)} ${isCurrentlyBanned ? 'разблокирован' : 'заблокирован'}.`);
+              loadAdminData();
+            }
+          }
+        });
+      };
+
+      window.toggleRole = (id, encNick, encEmail, isCurrentlyAdmin) => {
+        const newRole = !isCurrentlyAdmin;
+        const email = decodeURIComponent(encEmail);
+        showAdminConfirm({
+          title: newRole ? 'Назначить администратором' : 'Снять права администратора',
+          message: `Изменить роль игрока ${decodeURIComponent(encNick)} на ${newRole ? 'Администратор' : 'Пользователь'}?`,
+          onConfirm: async () => {
+            if (newRole) {
+              const { error } = await sb.from('license_keys').insert([{
+                code: 'ADMIN_' + id,
+                duration_days: 99999,
+                is_used: true,
+                used_by: email
+              }]);
+              if (error) showToast("Ошибка", error.message);
+              else {
+                showToast("Успех", `Игрок ${decodeURIComponent(encNick)} назначен администратором!`);
+                loadAdminData();
+              }
+            } else {
+              const { error } = await sb.from('license_keys').delete().eq('code', 'ADMIN_' + id);
+              if (error) showToast("Ошибка", error.message);
+              else {
+                showToast("Успех", `С игрока ${decodeURIComponent(encNick)} сняты права администратора.`);
+                loadAdminData();
+              }
+            }
+          }
+        });
+      };
+
+      function showAdminConfirm({ title, message, onConfirm }) {
+        const modal = document.getElementById('adminConfirmModal');
+        document.getElementById('adminConfirmTitle').textContent = title;
+        document.getElementById('adminConfirmMsg').textContent = message;
+        modal.classList.add('active');
+
+        const btnOk = document.getElementById('btnAdminConfirmOk');
+        const btnCancel = document.getElementById('btnAdminConfirmCancel');
+
+        const handleOk = () => {
+          modal.classList.remove('active');
+          cleanup();
+          if (typeof onConfirm === 'function') onConfirm();
+        };
+
+        const handleCancel = () => {
+          modal.classList.remove('active');
+          cleanup();
+        };
+
+        function cleanup() {
+          btnOk.removeEventListener('click', handleOk);
+          btnCancel.removeEventListener('click', handleCancel);
+        }
+
+        btnOk.addEventListener('click', handleOk);
+        btnCancel.addEventListener('click', handleCancel);
+      }
+
+      function showToast(title, message) {
+        const modal = document.getElementById('adminToastModal');
+        document.getElementById('adminToastTitle').textContent = title;
+        document.getElementById('adminToastMsg').textContent = message;
+        modal.classList.add('active');
+
+        const btnClose = document.getElementById('btnAdminToastClose');
+        const handleClose = () => {
+          modal.classList.remove('active');
+          btnClose.removeEventListener('click', handleClose);
+        };
+        btnClose.addEventListener('click', handleClose);
+      }
+
+      // Initial load
+      loadAdminData();
+      checkTechWorksState();
+    });
+  </script>
+</body>
+</html>

@@ -1159,6 +1159,15 @@ function initStandaloneProfilePage() {
       }
     }
 
+    const isBanned = (rawSubUntil === 'BANNED' || hwid === 'BANNED' || rawSubUntil === 'Заблокирован');
+    if (isBanned) {
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      if (authView) authView.classList.add('active');
+      if (profileView) profileView.classList.remove('active');
+      showAlert(authAlert, '⛔ Ваш аккаунт заблокирован администратором!', 'error');
+      return;
+    }
+
     const subActive = rawSubActive === true || rawSubActive === 'true' || 
       (rawSubUntil && rawSubUntil !== 'Не активна' && rawSubUntil !== 'Требуется активация ключа');
     const subExpiry = rawSubUntil || (subActive ? 'Навсегда (Lifetime)' : 'Требуется активация ключа');
@@ -1187,8 +1196,10 @@ function initStandaloneProfilePage() {
       profileHwidVal.textContent = hwid;
     }
 
-    const isAdmin = email === 'gorwok.h@yandex.ru' || user.user_metadata?.role === 'Admin';
-    if (adminGenBox) adminGenBox.style.display = isAdmin ? 'block' : 'none';
+    const btnAdminPanel = document.getElementById('btnAdminPanel');
+    const isAdmin = email === 'gorwok.h@yandex.ru' || user.user_metadata?.role === 'Admin' || prof?.is_admin;
+    if (btnAdminPanel) btnAdminPanel.style.display = isAdmin ? 'inline-flex' : 'none';
+    if (adminGenBox) adminGenBox.style.display = 'none';
     if (btnResetHwid) btnResetHwid.style.display = isAdmin ? 'inline-flex' : 'none';
     if (dlBox) dlBox.style.display = (subActive || isAdmin) ? 'block' : 'none';
   }
@@ -1230,6 +1241,17 @@ function initStandaloneProfilePage() {
           if (error) {
             showAlert(authAlert, error.message.includes('Invalid login') ? 'Неверный Email или пароль.' : error.message, 'error');
           } else {
+            // Check if user is banned
+            const { data: profs } = await supabaseClient.from('profiles').select('*').eq('id', data.user.id).limit(1);
+            const prof = profs && profs[0];
+            const isBan = prof && (prof.subscription_until === 'BANNED' || prof.hwid === 'BANNED' || prof.subscription_until === 'Заблокирован');
+            if (isBan) {
+              await supabaseClient.auth.signOut();
+              showAlert(authAlert, '⛔ Ваш аккаунт заблокирован администратором!', 'error');
+              btn.disabled = false;
+              btn.textContent = 'Войти в аккаунт';
+              return;
+            }
             showAlert(authAlert, 'Успешный вход! Загрузка профиля...', 'success');
             updateHeaderAuth(data.user);
             fetchAndRenderProfile();
@@ -1590,14 +1612,14 @@ if (document.readyState === 'loading') {
 
 checkInitialSession();
 
-// Direct Client Download via Supabase Cloud Storage (No browser URL preview)
-const btnDownloadClient = document.getElementById('btn-download-client');
+// Direct Client Download via Supabase Cloud Storage (shape.exe launcher)
+const btnDownloadClient = document.getElementById('btnDownloadClient') || document.getElementById('btn-download-client');
 if (btnDownloadClient) {
   btnDownloadClient.addEventListener('click', () => {
-    const downloadUrl = 'https://psowlftvhxaluzkahpin.supabase.co/storage/v1/object/public/downloads/shape.jar';
+    const downloadUrl = 'https://psowlftvhxaluzkahpin.supabase.co/storage/v1/object/public/downloads/shape.exe';
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = 'shape.jar';
+    link.download = 'shape.exe';
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
