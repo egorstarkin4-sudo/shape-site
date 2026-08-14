@@ -1132,6 +1132,7 @@ function initStandaloneProfilePage() {
     let hwid = user.user_metadata?.hwid || 'Не привязан';
     let rawSubActive = user.user_metadata?.subscription_active;
     let rawSubUntil = user.user_metadata?.subscription_until;
+    let prof = null;
 
     // Pull live HWID and subscription from profiles table
     if (supabaseClient) {
@@ -1144,7 +1145,7 @@ function initStandaloneProfilePage() {
         }
         const { data: profs } = await query.limit(1);
         if (profs && profs.length > 0) {
-          const prof = profs[0];
+          prof = profs[0];
           if (prof.hwid && prof.hwid !== 'null' && prof.hwid !== '') {
             hwid = prof.hwid;
             if (!user.user_metadata) user.user_metadata = {};
@@ -1197,7 +1198,7 @@ function initStandaloneProfilePage() {
     }
 
     const btnAdminPanel = document.getElementById('btnAdminPanel');
-    const isAdmin = email === 'gorwok.h@yandex.ru' || user.user_metadata?.role === 'Admin' || prof?.is_admin;
+    const isAdmin = email === 'gorwok.h@yandex.ru' || user.user_metadata?.role === 'Admin' || (prof && prof.is_admin);
     if (btnAdminPanel) btnAdminPanel.style.display = isAdmin ? 'inline-flex' : 'none';
     if (adminGenBox) adminGenBox.style.display = 'none';
     if (btnResetHwid) btnResetHwid.style.display = isAdmin ? 'inline-flex' : 'none';
@@ -1213,6 +1214,8 @@ function initStandaloneProfilePage() {
 
   if (currentUser) {
     renderStandaloneProfile(currentUser);
+  } else {
+    renderStandaloneProfile(null);
   }
 
   // Form Login
