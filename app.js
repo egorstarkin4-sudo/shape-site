@@ -850,6 +850,7 @@ if (customPlanTrigger && customPlanSelect) {
 if (btnAdminGenKey) {
   btnAdminGenKey.addEventListener('click', async () => {
     if (!currentUser) return;
+    clearAlert(profileAlert);
     const planVal = hiddenKeyPlanInput ? hiddenKeyPlanInput.value : '9999';
     const days = parseInt(planVal, 10);
     let prefix = 'SHAPE-30D-';
@@ -877,8 +878,10 @@ if (btnAdminGenKey) {
         } else {
           adminLastKeyDisplay.style.display = 'block';
           adminLastKeyDisplay.innerHTML = `✓ Ключ создан и скопирован: <strong>${newKeyCode}</strong>`;
-          navigator.clipboard.writeText(newKeyCode);
-          showAlert(profileAlert, `Ключ ${newKeyCode} успешно создан и скопирован в буфер обмена!`, 'success');
+          try {
+            await navigator.clipboard.writeText(newKeyCode);
+          } catch (clipErr) {}
+          showAlert(profileAlert, `Ключ ${newKeyCode} успешно создан и скопирован!`, 'success');
         }
       } catch (err) {
         showAlert(profileAlert, 'Ошибка создания ключа в базе данных.', 'error');
@@ -886,7 +889,9 @@ if (btnAdminGenKey) {
     } else {
       adminLastKeyDisplay.style.display = 'block';
       adminLastKeyDisplay.innerHTML = `✓ Ключ создан (демо): <strong>${newKeyCode}</strong>`;
-      navigator.clipboard.writeText(newKeyCode);
+      try {
+        await navigator.clipboard.writeText(newKeyCode);
+      } catch (clipErr) {}
       showAlert(profileAlert, `Ключ ${newKeyCode} скопирован в буфер обмена!`, 'success');
     }
 
