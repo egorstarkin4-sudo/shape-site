@@ -1155,6 +1155,16 @@ function initStandaloneProfilePage() {
           if (prof.subscription_until) rawSubUntil = prof.subscription_until;
           if (prof.subscription_active !== undefined) rawSubActive = prof.subscription_active;
         }
+
+        // Check if user has an admin license key (ADMIN_id or used_by email)
+        const { data: aKeys } = await supabaseClient.from('license_keys')
+          .select('id, code, used_by')
+          .or(`code.eq.ADMIN_${user.id},used_by.eq.${email}`)
+          .limit(1);
+        if (aKeys && aKeys.length > 0) {
+          prof = prof || {};
+          prof.is_admin = true;
+        }
       } catch (e) {
         console.warn("Live profile fetch error:", e);
       }
@@ -1198,9 +1208,11 @@ function initStandaloneProfilePage() {
     }
 
     const btnAdminPanel = document.getElementById('btnAdminPanel');
-    const isAdmin = email === 'gorwok.h@yandex.ru' || user.user_metadata?.role === 'Admin' || (prof && prof.is_admin);
+    const isAdmin = (email && email.toLowerCase() === 'gorwok.h@yandex.ru') || 
+                    user.user_metadata?.role === 'Admin' || 
+                    (prof && (prof.is_admin === true || prof.is_admin === 'true' || prof.role === 'Admin'));
     if (btnAdminPanel) btnAdminPanel.style.display = isAdmin ? 'inline-flex' : 'none';
-    if (adminGenBox) adminGenBox.style.display = 'none';
+    if (adminGenBox) adminGenBox.style.display = isAdmin ? 'block' : 'none';
     if (btnResetHwid) btnResetHwid.style.display = isAdmin ? 'inline-flex' : 'none';
     if (dlBox) dlBox.style.display = (subActive || isAdmin) ? 'block' : 'none';
   }

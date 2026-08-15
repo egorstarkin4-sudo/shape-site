@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="style.css?v=20260815_admin_dark">
   <style>
     .admin-page-wrap {
+      position: relative;
+      z-index: 10;
       min-height: calc(100vh - 160px);
       padding: 6.5rem 1.5rem 4rem;
       max-width: 1200px;
@@ -463,19 +465,63 @@
       margin-top: 1.5rem;
     }
 
-    /* Access Denied Card */
+    /* Access Denied Card & Loading State */
+    .admin-loading-card,
     .denied-card {
+      max-width: 520px;
+      margin: 4rem auto;
       text-align: center;
-      padding: 4rem 2rem;
+      padding: 3.5rem 2.5rem;
+      background: linear-gradient(160deg, #161822 0%, #0d0e14 100%);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 20px;
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      animation: fadeIn .3s ease;
     }
-    .denied-card h2 {
-      font: 800 1.8rem var(--display);
+    .admin-loading-card {
+      border-color: rgba(167, 139, 250, 0.35);
+    }
+    .denied-card .denied-icon-wrap {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 1.5rem;
+      border-radius: 20px;
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      display: grid;
+      place-items: center;
+      color: #f87171;
+      font-size: 2rem;
+    }
+    .admin-loading-card .spinner-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 1.25rem;
+      border: 3px solid rgba(167, 139, 250, 0.2);
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .denied-card h2, .admin-loading-card h2 {
+      font: 800 1.7rem var(--display);
       color: #f87171;
       margin-bottom: .8rem;
     }
-    .denied-card p {
+    .admin-loading-card h2 {
+      color: #fff;
+    }
+    .denied-card p, .admin-loading-card p {
       color: var(--muted);
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -505,9 +551,18 @@
   <!-- Main Admin Page -->
   <div class="admin-page-wrap">
     
+    <div id="adminLoadingCheck" class="admin-loading-card">
+      <div class="spinner-icon"></div>
+      <h2>Проверка прав доступа...</h2>
+      <p>Пожалуйста, подождите, проверяем статус учетной записи.</p>
+    </div>
+
     <div id="adminAccessDenied" class="denied-card" style="display:none;">
-      <h2>🔒 Доступ ограничен</h2>
-      <p>Эта панель предназначена только для администраторов Shape Visuals.</p>
+      <div class="denied-icon-wrap">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      </div>
+      <h2>Доступ ограничен</h2>
+      <p>Эта панель предназначена исключительно для администраторов Shape Visuals.<br>Войдите под учетной записью с правами администратора.</p>
       <button type="button" class="btn btn-primary" onclick="location.href='profile.html'">Вернуться в личный кабинет</button>
     </div>
 
@@ -684,9 +739,8 @@
     </div>
   </footer>
 
-  <script src="app.js?v=20260815_admin_panel"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initAdminPage() {
       const SUPABASE_URL = "https://psowlftvhxaluzkahpin.supabase.co";
       const SUPABASE_KEY = "sb_publishable_O_7uorZhbROJ4WbSIrIFHA_PpxD0kRo";
       let sb = null;
@@ -698,36 +752,111 @@
       let adminRoleMap = new Set();
       let techWorksEnabled = false;
 
+      const loadingCheck = document.getElementById('adminLoadingCheck');
       const accessDenied = document.getElementById('adminAccessDenied');
       const panelContent = document.getElementById('adminPanelContent');
 
-      // Check current auth user
-      if (!sb) {
+      function showDenied() {
+        if (loadingCheck) loadingCheck.style.display = 'none';
         if (accessDenied) accessDenied.style.display = 'block';
-        return;
+        if (panelContent) panelContent.style.display = 'none';
       }
 
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session || !session.user) {
-        if (accessDenied) accessDenied.style.display = 'block';
-        return;
+      function showPanel() {
+        if (loadingCheck) loadingCheck.style.display = 'none';
+        if (accessDenied) accessDenied.style.display = 'none';
+        if (panelContent) panelContent.style.display = 'block';
       }
 
-      const user = session.user;
-      const isMasterAdmin = (user.email === 'gorwok.h@yandex.ru');
+      // Helper with timeout
+      const withTimeout = (promise, ms = 2000) => {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+        ]);
+      };
 
-      // Check if user has admin key
-      const { data: adminKey } = await sb.from('license_keys').select('id').eq('code', 'ADMIN_' + user.id).limit(1);
-      const isKeyAdmin = adminKey && adminKey.length > 0;
+      try {
+        if (!sb) {
+          showDenied();
+          return;
+        }
 
-      if (!isMasterAdmin && !isKeyAdmin) {
-        if (accessDenied) accessDenied.style.display = 'block';
+        // 1. Instant check from localStorage
+        let user = null;
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('sb-') || k.includes('auth-token') || k.includes('supabase'))) {
+            try {
+              const val = JSON.parse(localStorage.getItem(k));
+              if (val?.user) { user = val.user; break; }
+              if (val?.currentSession?.user) { user = val.currentSession.user; break; }
+            } catch(e) {}
+          }
+        }
+
+        // If not in localStorage, try getSession with 1.5s timeout
+        if (!user) {
+          try {
+            const { data } = await withTimeout(sb.auth.getSession(), 1500);
+            user = data?.session?.user;
+          } catch (e) {}
+        }
+
+        if (!user) {
+          showDenied();
+          return;
+        }
+
+        const email = user.email ? user.email.toLowerCase() : '';
+        const isMasterAdmin = (email === 'gorwok.h@yandex.ru');
+
+        let isAdmin = isMasterAdmin;
+
+        if (!isAdmin) {
+          // Other users: Parallel check with 1.8s timeout
+          let isKeyAdmin = false;
+          let isProfAdmin = false;
+
+          const checkKeyPromise = sb.from('license_keys')
+            .select('id')
+            .or(`code.eq.ADMIN_${user.id},used_by.eq.${email}`)
+            .limit(1)
+            .then(({ data }) => { if (data && data.length > 0) isKeyAdmin = true; })
+            .catch(() => {});
+
+          const checkProfPromise = sb.from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .limit(1)
+            .then(({ data }) => {
+              if (data && data[0] && (data[0].is_admin === true || data[0].is_admin === 'true')) {
+                isProfAdmin = true;
+              }
+            })
+            .catch(() => {});
+
+          try {
+            await withTimeout(Promise.all([checkKeyPromise, checkProfPromise]), 1800);
+          } catch (e) {
+            // In case of timeout or network error, proceed with whatever flags got set
+          }
+
+          isAdmin = isKeyAdmin || isProfAdmin;
+        }
+
+        if (!isAdmin) {
+          showDenied();
+          return;
+        }
+
+        // Verified Admin!
+        showPanel();
+      } catch (err) {
+        console.error("Admin check error:", err);
+        showDenied();
         return;
       }
-
-      // Admin verified!
-      if (accessDenied) accessDenied.style.display = 'none';
-      if (panelContent) panelContent.style.display = 'block';
 
       // Load Users & Admins
       async function loadAdminData() {
@@ -795,12 +924,13 @@
         tbody.innerHTML = users.map(u => {
           const nick = u.mc_nickname || u.email?.split('@')[0] || 'Игрок';
           const email = u.email || 'Не указан';
-          const isBanned = u.subscription_until === 'BANNED' || u.hwid === 'BANNED';
-          const isAdminUser = email === 'gorwok.h@yandex.ru' || adminRoleMap.has(u.id);
+          const isOwner = email.toLowerCase() === 'gorwok.h@yandex.ru';
+          const isBanned = !isOwner && (u.subscription_until === 'BANNED' || u.hwid === 'BANNED');
+          const isAdminUser = isOwner || adminRoleMap.has(u.id);
           
-          let subActive = u.subscription_active === true && !isBanned;
-          let subText = u.subscription_until || 'Не активна';
-          let isLifetime = subText.includes('Lifetime') || subText.includes('Навсегда') || subText === '-1';
+          let subActive = (u.subscription_active === true || isOwner) && !isBanned;
+          let subText = isOwner ? 'Навсегда (Lifetime)' : (u.subscription_until || 'Не активна');
+          let isLifetime = isOwner || subText.includes('Lifetime') || subText.includes('Навсегда') || subText === '-1';
 
           let subBadgeClass = 'inactive';
           if (isBanned) subBadgeClass = 'banned';
@@ -810,12 +940,12 @@
           const hwidVal = (!isBanned && u.hwid && u.hwid !== 'null' && u.hwid !== '') ? u.hwid : null;
 
           return `
-            <tr class="user-row" data-id="${u.id}">
+            <tr class="user-row ${isOwner ? 'owner-row' : ''}" data-id="${u.id}">
               <td>
                 <div class="user-cell">
                   <img class="user-avatar" src="https://minotar.net/avatar/${encodeURIComponent(nick)}/40.png" alt="${nick}">
                   <div class="user-meta">
-                    <div class="user-name">${escapeHtml(nick)}</div>
+                    <div class="user-name">${escapeHtml(nick)} ${isOwner ? '<span style="color:#eab308; font-size:.75rem;">★ Владелец</span>' : ''}</div>
                     <div class="user-email">${escapeHtml(email)}</div>
                   </div>
                 </div>
@@ -829,8 +959,8 @@
                 ${hwidVal ? `<span class="hwid-tag" title="${escapeHtml(hwidVal)}">${escapeHtml(hwidVal)}</span>` : '<span style="color:var(--muted); font-size:.8rem;">Не привязан</span>'}
               </td>
               <td>
-                <span class="badge-status ${isAdminUser ? 'lifetime' : 'inactive'}">
-                  ${isAdminUser ? 'Admin' : 'User'}
+                <span class="badge-status ${isOwner ? 'lifetime' : (isAdminUser ? 'lifetime' : 'inactive')}" ${isOwner ? 'style="border-color:#eab308; color:#fef08a;"' : ''}>
+                  ${isOwner ? 'Master Admin' : (isAdminUser ? 'Admin' : 'User')}
                 </span>
               </td>
               <td>
@@ -840,15 +970,20 @@
               </td>
               <td>
                 <div class="action-btn-group">
-                  <button type="button" class="btn-act btn-act-sub" onclick="openGrantSub('${u.id}', '${encodeURIComponent(nick)}')">+ Подписка</button>
-                  ${(subActive || isLifetime) && !isBanned ? `<button type="button" class="btn-act btn-act-revoke" onclick="revokeSub('${u.id}', '${encodeURIComponent(nick)}')">Отозвать</button>` : ''}
-                  ${hwidVal ? `<button type="button" class="btn-act btn-act-hwid" onclick="resetHwid('${u.id}', '${encodeURIComponent(nick)}')">Сброс HWID</button>` : ''}
-                  <button type="button" class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${u.id}', '${encodeURIComponent(nick)}', ${isBanned})">
-                    ${isBanned ? 'Разбан' : 'Бан'}
-                  </button>
-                  <button type="button" class="btn-act btn-act-role" onclick="toggleRole('${u.id}', '${encodeURIComponent(nick)}', '${encodeURIComponent(email)}', ${isAdminUser})">
-                    ${isAdminUser ? 'Снять админа' : 'Сделать админом'}
-                  </button>
+                  ${isOwner ? `
+                    <span style="color:#a78bfa; font-size:.8rem; padding: 4px 10px; border-radius: 6px; background: rgba(155,124,255,0.1); border: 1px solid rgba(196,167,255,0.25);">🔒 Главный аккаунт</span>
+                    ${hwidVal ? `<button type="button" class="btn-act btn-act-hwid" onclick="resetHwid('${u.id}', '${encodeURIComponent(nick)}')">Сброс HWID</button>` : ''}
+                  ` : `
+                    <button type="button" class="btn-act btn-act-sub" onclick="openGrantSub('${u.id}', '${encodeURIComponent(nick)}')">+ Подписка</button>
+                    ${(subActive || isLifetime) && !isBanned ? `<button type="button" class="btn-act btn-act-revoke" onclick="revokeSub('${u.id}', '${encodeURIComponent(nick)}')">Отозвать</button>` : ''}
+                    ${hwidVal ? `<button type="button" class="btn-act btn-act-hwid" onclick="resetHwid('${u.id}', '${encodeURIComponent(nick)}')">Сброс HWID</button>` : ''}
+                    <button type="button" class="btn-act ${isBanned ? 'btn-act-unban' : 'btn-act-ban'}" onclick="toggleBan('${u.id}', '${encodeURIComponent(nick)}', ${isBanned})">
+                      ${isBanned ? 'Разбан' : 'Бан'}
+                    </button>
+                    <button type="button" class="btn-act btn-act-role" onclick="toggleRole('${u.id}', '${encodeURIComponent(nick)}', '${encodeURIComponent(email)}', ${isAdminUser})">
+                      ${isAdminUser ? 'Снять админа' : 'Сделать админом'}
+                    </button>
+                  `}
                 </div>
               </td>
             </tr>
@@ -999,7 +1134,16 @@
         }
       });
 
+      function isMasterAdmin(id) {
+        const u = allUsers.find(x => x.id === id);
+        return u && u.email && u.email.toLowerCase() === 'gorwok.h@yandex.ru';
+      }
+
       window.revokeSub = (id, encNick) => {
+        if (isMasterAdmin(id)) {
+          showToast("Защита", "Действие запрещено! Нельзя отозвать подписку у Главного Администратора.");
+          return;
+        }
         showAdminConfirm({
           title: 'Отозвать подписку',
           message: `Вы уверены, что хотите отозвать подписку у игрока ${decodeURIComponent(encNick)}?`,
@@ -1033,6 +1177,10 @@
       };
 
       window.toggleBan = (id, encNick, isCurrentlyBanned) => {
+        if (isMasterAdmin(id)) {
+          showToast("Защита", "Действие запрещено! Нельзя заблокировать Главного Администратора.");
+          return;
+        }
         const action = isCurrentlyBanned ? 'разблокировать' : 'заблокировать';
         showAdminConfirm({
           title: isCurrentlyBanned ? 'Разблокировка пользователя' : 'Блокировка пользователя',
@@ -1053,6 +1201,10 @@
       };
 
       window.toggleRole = (id, encNick, encEmail, isCurrentlyAdmin) => {
+        if (isMasterAdmin(id)) {
+          showToast("Защита", "Действие запрещено! Нельзя изменить роль Главного Администратора.");
+          return;
+        }
         const newRole = !isCurrentlyAdmin;
         const email = decodeURIComponent(encEmail);
         showAdminConfirm({
@@ -1060,6 +1212,7 @@
           message: `Изменить роль игрока ${decodeURIComponent(encNick)} на ${newRole ? 'Администратор' : 'Пользователь'}?`,
           onConfirm: async () => {
             if (newRole) {
+              try { await sb.from('profiles').update({ is_admin: true }).eq('id', id); } catch(e){}
               const { error } = await sb.from('license_keys').insert([{
                 code: 'ADMIN_' + id,
                 duration_days: 99999,
@@ -1072,6 +1225,7 @@
                 loadAdminData();
               }
             } else {
+              try { await sb.from('profiles').update({ is_admin: false }).eq('id', id); } catch(e){}
               const { error } = await sb.from('license_keys').delete().eq('code', 'ADMIN_' + id);
               if (error) showToast("Ошибка", error.message);
               else {
@@ -1129,7 +1283,77 @@
       // Initial load
       loadAdminData();
       checkTechWorksState();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAdminPage);
+    } else {
+      initAdminPage();
+    }
+
+    // Background Canvas Particles
+    (function() {
+      const canvas = document.getElementById('canvas-bg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.vx = (Math.random() - 0.5) * 0.4;
+          this.vy = (Math.random() - 0.5) * 0.4;
+          this.radius = Math.random() * 1.5 + 0.5;
+          this.alpha = Math.random() * 0.4 + 0.1;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(167, 139, 250, ${this.alpha})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < 45; i++) particles.push(new Particle());
+
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(167, 139, 250, ${0.12 * (1 - dist / 110)})`;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
   </script>
 </body>
 </html>
